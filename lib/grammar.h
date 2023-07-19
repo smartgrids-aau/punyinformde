@@ -164,6 +164,7 @@ Verb 'stoße' 'bewege' 'drücke' 'schiebe' 'schieb'
     * noun 'nach' noun                            -> Transfer;
 
 Verb 'lege' 'platziere' 'leg'
+  * noun 'ab'  -> Drop
 	* multiexcept 'in' noun     -> Insert
 	* multiexcept 'auf' noun              -> PutOn;
 
