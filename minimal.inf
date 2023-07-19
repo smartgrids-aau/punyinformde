@@ -12,7 +12,7 @@
 ! $ZCODE_LESS_DICT_DATA=1 removes an empty data byte for every dictionary word.
 
 Constant Story      "Minimal";
-Constant Headline   "^A sample game which uses PunyInform.^";
+Constant Headline   "^Ein Beispiel-Adventure mit PunyInform-DE.^";
 
 ! Uncomment ONE of the two following lines, to show either time or score/turns
 ! Leaving both commented out makes the library bigger.

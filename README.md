@@ -1,6 +1,6 @@
 # PunyInform - DE
 
-This is the German translation of PunyInform 4.6
+This is the German translation of PunyInform 4.6.
 
 PunyInform is a library written in Inform 6 which allows people to
 create text adventure games / interactive fiction using the Z-machine
@@ -29,7 +29,30 @@ the dropdown menu under Inform 6 and press the arrow next to it.
 
 ## A minimal game in PunyInform - DE
 
+```
+Constant Story      "Minimal";
+Constant Headline   "^Ein Beispiel-Adventure mit PunyInform-DE.^";
+Constant STATUSLINE_SCORE; Statusline score;
+Constant NO_SCORE = 0;
 
+Constant OPTIONAL_NO_DARKNESS;
+
+Constant INITIAL_LOCATION_VALUE = Library;
+Include "globals.h";
+Include "puny.h";
+
+Object Library "Die Bibliothek"
+	with
+		description "Du bist in einer Bibliothek";
+Object -> Box "Box"
+	with
+		name 'box',
+		inside_description "In der Box zu stehen ist so schön.",
+	has container open openable enterable female;
+[Initialise;
+	print "^^Und so beginnt die Geschichte...^^";
+];
+```
 
 ## Motivation
 
@@ -223,7 +246,7 @@ There are also categories/channels in the above forums where you can
 discuss plot, story, puzzles etc, and posts requests for beta-testers
 for your game.
 
-## Translations
+## Further Translations
 
 * [PunyInformFr](https://gitlab.com/auraes/punyinformfr) is a translation of
   the PunyInform library to French, by auraes.
