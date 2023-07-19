@@ -27,7 +27,7 @@ You can also use [borogove.app](https://borogove.app/) to write PunyInform
 code and play the resulting game in your browser. Just select PunyInform from
 the dropdown menu under Inform 6 and press the arrow next to it.
 
-![A minimal game in PunyInform](https://github.com/johanberntsson/PunyInform/blob/master/documentation/screenshots/simplegame.png?raw=true)
+![A minimal game in PunyInform](https://github.com/johanberntsson/PunyInform/blob/master/documentation/screenshots/simplegame.png?raw=true) -> The German version is included in the download
 
 ## Motivation
 
