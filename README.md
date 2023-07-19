@@ -27,7 +27,9 @@ You can also use [borogove.app](https://borogove.app/) to write PunyInform
 code and play the resulting game in your browser. Just select PunyInform from
 the dropdown menu under Inform 6 and press the arrow next to it.
 
-![A minimal game in PunyInform](https://github.com/johanberntsson/PunyInform/blob/master/documentation/screenshots/simplegame.png?raw=true) -> The German version is included in the download
+## A minimal game in PunyInform - DE
+
+
 
 ## Motivation
 
@@ -230,6 +232,8 @@ for your game.
 
 PunyInform was conceived, designed and coded by Johan Berntsson and Fredrik
 Ramsberg. 
+
+German Translation by Lea Santner, A. Pulvermacher.
 
 Additional coding by Pablo Martinez and Tomas Öberg. PunyInform includes 
 code from the Inform 6 standard library, by Graham Nelson. 
