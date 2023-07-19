@@ -434,10 +434,11 @@ Constant ONE_SPACE_STRING = " ";
 			}
 			else if(p_obj has pluralname)
 				print "ein paar ";
-			else
+			else {
         if (p_obj has female) print "eine ";
-        if (p_obj has neuter) print "ein ";
+        else if (p_obj has neuter) print "ein ";
         else print "einen ";
+      }
     }
 	}
 	PrintShortName(p_obj);

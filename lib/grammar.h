@@ -19,16 +19,17 @@ Verb 'frage'
 	* creature 'um' noun                       -> AskFor
 	* creature 'nach' topic                       -> AskTo;
 
-Verb 'attackiere' 'zerbreche' 'zerstöre'
+Verb 'attackiere' 'zerbreche' 'zerstöre' 'zerbrich'
      'bekämpfe' 'schlage' 'ermorde' 'exekutiere'
      'folter' 'demoliere'
     * noun                                      -> Attack
     * noun 'mit' held                          -> Attack;
 
-Verb 'kletter'
+Verb 'kletter' 'klettere'
 	* noun                                      -> Climb
 	* 'über' noun                          -> Climb
 	* 'in' noun                        -> Enter
+  * 'auf' noun -> Enter
 	* 'aus' noun                    -> Exit;
 
 Verb 'schließe'
@@ -41,29 +42,34 @@ Verb 'schneide' 'zerschneide'
 	* noun                                      -> Cut
 	* noun 'mit' held                          -> Attack;
 
-Verb 'grabe'
+Verb 'grabe' 'grab'
 	* noun                                      -> Dig
-	* noun 'mit' held                          -> Dig;
+	* noun 'mit' held                          -> Dig
+  * 'in' noun -> Dig
+  * 'in' noun 'mit' held  -> Dig;
 
-Verb 'trinke' 'schlürfe' 'schlucke'
+Verb 'trinke' 'schlürfe' 'schlucke' 'trink'
     * noun                                      -> Drink;
 
-Verb 'lass'
+Verb 'lass' 'verliere'
+  * held -> Drop
 	* multiheld 'fallen'/'ab'                                 -> Drop
 	* multiexcept 'in' noun       -> Insert;
 
-Verb 'werf' 'werfe'
+Verb 'werf' 'werfe' 'wirf'
+  * held -> Drop
+  * held 'weg' -> Drop
 	* held 'auf'/'nach' noun      -> ThrowAt;
 
 Verb 'esse' 'iss'
     * held                                      -> Eat;
 
 #IfDef OPTIONAL_EXTENDED_VERBSET;
-Verb 'betrete'
+Verb 'betrete' 'betritt'
 	*                                           -> GoIn
 	* noun                                      -> Enter;
 #IfNot;
-Verb 'betrete'
+Verb 'betrete' 'betritt'
 	* noun                                      -> Enter;
 #Endif;
 
@@ -74,7 +80,7 @@ Verb 'verlasse'
 	*                                           -> Exit
 	* noun                                      -> Exit;
 
-Verb 'befülle'
+Verb 'befülle' 'fülle' 'füll'
 	* noun                                      -> Fill;
 
 Verb 'geh'
@@ -125,16 +131,20 @@ Verb 'verriegel' 'versperre' 'sperre'
 	* noun 'mit' held 'zu'                          -> Lock
 	* noun 'mit' held                          -> Lock;
 
-Verb 'schau' 'l//'
+Verb 'schau' 'schaue' 'untersuche' 'u//'
 	* noun                                      -> Examine
 	* noun 'an'                                -> Examine
 	*                                           -> Look
+  * 'unter' noun -> Look
 	* 'in'/'auf' noun                   -> Search;
+
+Verb 'durchsuche'
+  * noun -> Search;
 
 Verb 'mache' 'decke' 'entpacke' 'öffne' 'mach'
 	* noun                                      -> Open
   * noun 'auf'                                      -> Open
-	* noun 'mit' held                          -> Unlock
+	* noun 'mit' held                          -> Open
 	* noun 'auf' 'mit' held                          -> Unlock
   * noun 'zu'                                 -> Close
   * noun 'zu' 'mit' held                      -> Close;
@@ -144,14 +154,16 @@ Verb 'hebe'
 	* multi 'auf'                                -> Take;
 
 Verb 'ziehe' 'zieh'
-    * noun                                      -> Pull;
+    * noun                                      -> Pull
+    * noun 'an'    -> Wear
+    * noun 'aus'    -> Disrobe;
 
-Verb 'stoße' 'bewege' 'drücke'
+Verb 'stoße' 'bewege' 'drücke' 'schiebe' 'schieb'
     * noun                                      -> Push
     * noun 'nach' noun=ADirection                      -> PushDir
     * noun 'nach' noun                            -> Transfer;
 
-Verb 'lege' 'platziere'
+Verb 'lege' 'platziere' 'leg'
 	* multiexcept 'in' noun     -> Insert
 	* multiexcept 'auf' noun              -> PutOn;
 
@@ -195,7 +207,7 @@ Verb 'stehe' 'steh'
 	* 'auf'                                      -> Exit
 	* 'auf' noun                                 -> Enter;
 
-Verb 'schalte'
+Verb 'schalte' 'schalt'
 	* noun 'ein'                                 -> SwitchOn
 	* noun 'aus'                                -> SwitchOff
 	* noun                                      -> SwitchOn;
@@ -216,7 +228,7 @@ Verb 'knote' 'fixiere' 'befestige' 'repariere'
 Verb 'berühre' 'befühle' 'streichel' 'taste'
 	* noun                                      -> Touch;
 
-Verb 'drehe' 'rotiere' 'schraube' 'entschraube'
+Verb 'drehe' 'rotiere' 'schraube' 'entschraube' 'dreh'
 	* noun                                      -> Turn;
 
 Verb 'entsperre'
@@ -794,7 +806,7 @@ Array _PutOnMessages -->
 Verb 'blase'
 	* held                                      -> Blow;
 
-Verb 'verflucht' 'verdammt'
+Verb 'verflucht' 'verdammt' 'fluche'
 	*                                           -> Mild
 	* topic                                     -> Mild;
 
@@ -831,19 +843,20 @@ Verb 'brech' 'breche'
 	* noun 'mit' held                          -> Unlock
 	* noun 'mit' held 'auf'/'auseinander'          -> Unlock;
 
-Verb 'stelle'
+Verb 'stelle' 'stell'
   * noun 'ab'                                      -> Drop
 	* noun 'ein'                                      -> Set
+  * noun 'auf' -> PutOn
 	* noun  'ein' 'to' special                         -> SetTo;
 
 Verb 'scheiße' 'kacke'
 	*                                           -> Strong
 	* topic                                     -> Strong;
 
-Verb 'sing'
+Verb 'sing' 'singe'
 	*                                           -> Sing;
 
-Verb 'schlafe'
+Verb 'schlafe' 'schlaf'
 	*                                           -> Sleep;
 
 Verb 'entschuldigung'
@@ -874,9 +887,9 @@ Verb 'wach' 'aufwachen'
     * creature                                  -> WakeOther
     * creature 'auf'                             -> WakeOther;
 
-Verb 'wink'
+Verb 'wink' 'winke'
 	*                                           -> WaveHands
-	* noun                                      -> Wave;
+	* 'mit' noun                                      -> Wave;
 
 Verb 'ja' 'y//'
 	*                                           -> Yes;

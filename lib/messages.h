@@ -1124,9 +1124,9 @@ MSG_RUB_DEFAULT, MSG_SQUEEZE_DEFAULT:
 	MSG_ENTER_BAD_LOCATION:
 		print "Du musst zuerst ";
 		if(player notin location && ~~IndirectlyContains(parent(player), noun))
-			print (the) parent(player), "verlassen";
+			print (the) noun, " verlassen";
 		else
-			print (the) parent(noun), "betreten";
+			print (the) noun, " betreten";
 		".";
 #EndIf;
 #IfTrue MSG_INSERT_NOT_CONTAINER < 1000;

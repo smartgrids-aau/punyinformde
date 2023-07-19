@@ -297,10 +297,10 @@ Constant FAKE_D_OBJ = 10010;
 Constant FAKE_IN_OBJ = 10011;
 Constant FAKE_OUT_OBJ = 10012;
 #IfV5;
-Array _direction_dict_words static --> 'n//' 's//' 'e//' 'w//' 'ne' 'nw' 'se' 'sw' 'u//' 'd//' 0 0
+Array _direction_dict_words static --> 'n//' 's//' 'o//' 'w//' 'no' 'nw' 'se' 'sw' 'ra//' 'ru//' 0 0
 	'norden' 'süden' 'osten' 'westen' 'nordosten' 'nordwesten' 'südosten' 'südwesten' 'rauf' 'runter' 'in' 'aus';
 #Ifdef OPTIONAL_SHIP_DIRECTIONS;
-Array _ship_direction_dict_words static --> 'f//' 'a//' 'sb' 'p//' 0 0 0 0 'u//' 'd//' 0 0
+Array _ship_direction_dict_words static --> 'f//' 'a//' 'sb' 'p//' 0 0 0 0 'ra//' 'ru//' 0 0
 	'vorne' 'hinten' 'steuerbord' 'backbord' 0 0 0 0 'rauf' 'runter' 'in' 'aus';
 #Endif;
 #Endif;
@@ -315,10 +315,10 @@ Constant FAKE_D_OBJ = 10006;
 Constant FAKE_IN_OBJ = 10007;
 Constant FAKE_OUT_OBJ = 10008;
 #IfV5;
-Array _direction_dict_words static --> 'n//' 's//' 'e//' 'w//' 'u//' 'd//' 0 0
+Array _direction_dict_words static --> 'n//' 's//' 'o//' 'w//' 'ra//' 'ru//' 0 0
 	'norden' 'süden' 'osten' 'westen' 'rauf' 'runter' 'in' 'aus';
 #Ifdef OPTIONAL_SHIP_DIRECTIONS;
-Array _ship_direction_dict_words static --> 'f//' 'a//' 'sb' 'p//' 'u//' 'd//' 0 0
+Array _ship_direction_dict_words static --> 'v//' 'h//' 'st' 'b//' 'ra//' 'ru//' 0 0
 	'vorne' 'hinten' 'steuerbord' 'backbord' 'rauf' 'runter' 'in' 'aus';
 #Endif;
 #Endif;
@@ -765,15 +765,15 @@ Object Directions
 				@je _w 'in' ?_matched_in;
 				@je _w 'd//' 'runter' ?_matched_d;
 				@je _w 'floor' 'ground' ?_matched_d;
-				@je _w 'u//' 'rauf' ?_matched_u;
+				@je _w 'ra//' 'rauf' ?_matched_u;
 #Endif;
 #Ifdef OPTIONAL_FULL_DIRECTIONS;
-				@je _w 'se' 'südosten' ?_matched_se;
+				@je _w 'so' 'südosten' ?_matched_se;
 				@je _w 'sw' 'südwesten' ?_matched_sw;
-				@je _w 'ne' 'nordosten' ?_matched_ne;
+				@je _w 'no' 'nordosten' ?_matched_ne;
 				@je _w 'nw' 'nordwesten' ?_matched_nw;
 #Endif;
-				@je _w 'e//' 'osten' ?_matched_e;
+				@je _w 'o//' 'osten' ?_matched_e;
 				@je _w 'w//' 'westen' ?_matched_w;
 				@je _w 's//' 'süden' ?_matched_s;
 				@je _w 'n//' 'norden' ?_matched_n;
@@ -785,14 +785,14 @@ Object Directions
 				@je _w 'in' ?_matched_in;
 				@je _w 'd//' 'runter' ?_matched_d;
 				@je _w 'floor' 'ground' ?_matched_d;
-				@je _w 'u//' 'rauf' ?_matched_u;
+				@je _w 'ra//' 'rauf' ?_matched_u;
 			}
 
 			if(ship_directions_enabled) {
 				@je _w 'sb' 'steuerbord' ?_matched_e;
 				@je _w 'p//' 'backbord' ?_matched_w;
-				@je _w 'a//' 'hinten' ?_matched_s;
-				@je _w 'f//' 'vorne' ?_matched_n;
+				@je _w 'h//' 'hinten' ?_matched_s;
+				@je _w 'v//' 'vorne' ?_matched_n;
 			}
 
 #Endif; ! OPTIONAL_SHIP_DIRECTIONS
