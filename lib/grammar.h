@@ -131,7 +131,7 @@ Verb 'verriegel' 'versperre' 'sperre'
 	* noun 'mit' held 'zu'                          -> Lock
 	* noun 'mit' held                          -> Lock;
 
-Verb 'schau' 'schaue' 'untersuche' 'u//'
+Verb 'schau' 'schaue' 'untersuche' 'l//'
 	* noun                                      -> Examine
 	* noun 'an'                                -> Examine
 	*                                           -> Look

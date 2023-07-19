@@ -1,9 +1,11 @@
-# PunyInform
+# PunyInform - DE
+
+This is the German translation of PunyInform 4.6
 
 PunyInform is a library written in Inform 6 which allows people to
 create text adventure games / interactive fiction using the Z-machine
 virtual machine, to be played on 8-bit computers as well as newer
-platforms. It provides a parser, implementations of common verbs, as
+platforms. With this version you can make German text-adventures. It provides a parser, implementations of common verbs, as
 well as a framework for writing text adventures.
 
 PunyInform is based on the Inform 6 library, developed by Graham Nelson.

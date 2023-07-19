@@ -665,7 +665,7 @@ Constant SKIP_MSG_EXAMINE_DARK;
 #Endif;
 #Ifndef SKIP_MSG_PUSH_SCENERY;
 	MSG_PUSH_SCENERY, MSG_PULL_SCENERY, MSG_TURN_SCENERY:
-		"Welches Konzept!";
+		"Was für ein Konzept!";
 #Endif;
 #IfDef SACK_OBJECT;
 #IfTrue MSG_SACK_PUTTING < 1000;
@@ -683,9 +683,9 @@ Constant SKIP_MSG_EXAMINE_DARK;
 	MSG_INVENTORY_DEFAULT:
 		! return true if something listed to run afterroutines
 		! or false if MSG_INVENTORY_EMPTY should be displayed
-		p_arg_1 = "Du haltest ";
+		p_arg_1 = "Du hast ";
 		if(inventory_style == 0) {
-			p_arg_1 = "Du haltest: ";
+			p_arg_1 = "Du hast: ";
 			p_arg_2 = NEWLINE_BIT;
 		}
 		if(PrintContents(p_arg_1, player, p_arg_2)) {
@@ -1126,7 +1126,7 @@ MSG_RUB_DEFAULT, MSG_SQUEEZE_DEFAULT:
 		if(player notin location && ~~IndirectlyContains(parent(player), noun))
 			print (the) noun, " verlassen";
 		else
-			print (the) noun, " betreten";
+			print (the) noun, " ablegen";
 		".";
 #EndIf;
 #IfTrue MSG_INSERT_NOT_CONTAINER < 1000;
