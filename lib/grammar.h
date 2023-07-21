@@ -5,10 +5,10 @@
 ! ---------------------
 
 #IfV5;
-Zcharacter '@{0e4}';
-Zcharacter '@{0f6}';
-Zcharacter '';
-Zcharacter '';
+Zcharacter 'ä';
+Zcharacter 'ö';
+Zcharacter 'ü';
+Zcharacter 'ß';
 #EndIf;
 
 Verb 'antworte'
@@ -20,7 +20,7 @@ Verb 'frage'
 	* creature 'nach' topic                       -> AskTo;
 
 Verb 'attackiere' 'zerbreche' 'zerstöre' 'zerbrich'
-     'bekämpfe' 'schlage' 'ermorde' 'exekutiere'
+     'bekämpfe' 'schlage' 'ermorde' 'exekutiere' 'töte'
      'folter' 'demoliere'
     * noun                                      -> Attack
     * noun 'mit' held                          -> Attack;
@@ -820,7 +820,7 @@ Verb 'verbrenne' 'verkohle'
 Verb 'kaufe'
 	* noun                                      -> Buy;
 
-Verb 'berate'
+Verb 'befrage'
 	* noun 'über' topic                        -> Consult;
 
 Verb 'entleere' 'leere'
@@ -869,7 +869,7 @@ Verb 'drücke' 'quetsche' 'presse'
 Verb 'schwimm' 'tauche'
 	*                                           -> Swim;
 
-Verb 'schaukel'
+Verb 'schaukel' 'schaukle'
 	* noun                                      -> Swing
 	* 'auf' noun                                 -> Swing;
 
@@ -1440,7 +1440,7 @@ Global scope_cnt;
 ];
 
 [ PronounsSub;
-	print "Es: ", (name) itobj, "^Er: ", (name) himobj, "^Sie: ", (name) herobj, "^Sie: ", (name) themobj, "^";
+	print "Es: ", (name) itobj, "^Ihn: ", (name) himobj, "^Sie: ", (name) herobj, "^Sie: ", (name) themobj, "^";
 ];
 
 [ PurloinSub;

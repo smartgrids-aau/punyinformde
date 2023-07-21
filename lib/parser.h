@@ -692,10 +692,10 @@ Constant _PARSENP_CHOOSEOBJ_WEIGHT = 1000;
 	}
 
 	! check for pronouns
-	if(p_parse_pointer --> 0 == 'es' or 'er' or 'sie' or 'sie') {
+	if(p_parse_pointer --> 0 == 'es' or 'ihn' or 'sie' or 'sie') {
 		switch(p_parse_pointer --> 0) {
 		'es': _noun = itobj;
-		'er': _noun = himobj;
+		'ihn': _noun = himobj;
 		'sie': _noun = herobj;
 		'sie': _noun = themobj;
 		}
@@ -1686,11 +1686,11 @@ Array guess_object-->5;
 	if(p_object == 0 or player or Directions) return;
 	if(p_object has pluralname) {
 		themobj = p_object;
-	} else if(p_object has animate) {
+	} else {
 		if(p_object has female) herobj = p_object;
 		else if(p_object has neuter) itobj = p_object;
 		else himobj = p_object;
-	} else itobj = p_object;
+	}
 	!print "he ", himobj, " she ", herobj, " it ", itobj, "^";
 ];
 

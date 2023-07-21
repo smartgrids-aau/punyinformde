@@ -3,10 +3,10 @@
 System_file;
 
 #IfV5;
-Zcharacter '';
-Zcharacter '';
-Zcharacter '';
-Zcharacter '';
+Zcharacter 'ä';
+Zcharacter 'ö';
+Zcharacter 'ü';
+Zcharacter 'ß';
 #EndIf;
 
 Constant PUNYINFORM_MAJOR_VERSION = 4;
