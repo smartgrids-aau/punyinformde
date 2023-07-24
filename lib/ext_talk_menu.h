@@ -188,7 +188,7 @@ Constant TM_MSG_TOPICS_DEPLETED TM_REUSABLE_MSG_EXIT;
 Constant TM_MSG_EXIT TM_REUSABLE_MSG_EXIT;
 #Endif;
 #Ifndef TM_MSG_NO_TOPICS;
-Constant TM_MSG_NO_TOPICS "Gerade wüsstest du nichtüber was du reden solltest.";
+Constant TM_MSG_NO_TOPICS "Gerade wüsstest du nicht über was du reden solltest.";
 #Endif;
 #Ifndef TM_MSG_EXIT_OPTION;
 Constant TM_MSG_EXIT_OPTION "[ENTER] Beende Gespräch";
