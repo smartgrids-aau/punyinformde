@@ -243,18 +243,18 @@ Constant MAX_WAIT_MINUTES 1440;
 
 
 #Ifdef STATUSLINE_SCORE;
-	Extend 'wait'
-		* 'for' number 'move'/'moves'/'turn'/'turns' -> WaitMoves
-		* 'for' number 'minute'/'minutes'            -> WaitMinutes
-		* 'for' number 'hour'/'hours'                -> WaitHours
-	    * number 'minute'/'minutes'                  -> WaitMinutes
-	    * number 'hour'/'hours'                      -> WaitHours
-		* number 'move'/'moves'/'turn'/'turns'       -> WaitMoves
+	Extend 'warte'
+		* 'für' number 'runde'/'runden' -> WaitMoves
+		* 'für' number 'minute'/'minuten'            -> WaitMinutes
+		* 'für' number 'stunde'/'stunden'                -> WaitHours
+	    * number 'minute'/'minuten'                  -> WaitMinutes
+	    * number 'stunde'/'stunden'                      -> WaitHours
+		* number 'runde'/'runden'       -> WaitMoves
 		* number                                     -> WaitMoves;
 #Ifnot;
 	Extend 'warte'
 	    * 'bis' parsetime                          -> WaitUntil
-		* 'für' number 'Runde'/'Runden' -> WaitMoves
+		* 'für' number 'runde'/'runden' -> WaitMoves
 		* 'für' number 'minute'/'minuten'            -> WaitMinutes
 		* 'für' number 'stunde'/'stunden'                -> WaitHours
 	    * number 'minute'/'minuten'                  -> WaitMinutes

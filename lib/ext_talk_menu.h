@@ -169,7 +169,7 @@ Constant TM_SKIP_MSG_EXIT;
 #Endif;
 
 #Ifndef TM_SKIP_MSG_EXIT;
-Constant TM_REUSABLE_MSG_EXIT "Damit beendest du hflich das Gesprch.";
+Constant TM_REUSABLE_MSG_EXIT "Damit beendest du höflich das Gespräch.";
 #Endif;
 
 #Ifndef TM_MSG_YOU;
@@ -178,7 +178,7 @@ Constant TM_MSG_YOU "Du";
 
 #Ifndef TM_MSG_TALK_ABOUT_WHAT;
 [ TM_MSG_TALK_ABOUT_WHAT;
-	print "Sprich mit ", (the) current_talker, " ber:^";
+	print "Sprich mit ", (the) current_talker, " über:^";
 ];
 #Endif;
 #Ifndef TM_MSG_TOPICS_DEPLETED;
@@ -188,13 +188,13 @@ Constant TM_MSG_TOPICS_DEPLETED TM_REUSABLE_MSG_EXIT;
 Constant TM_MSG_EXIT TM_REUSABLE_MSG_EXIT;
 #Endif;
 #Ifndef TM_MSG_NO_TOPICS;
-Constant TM_MSG_NO_TOPICS "Gerade wsstest du nicht ber was du reden solltest.";
+Constant TM_MSG_NO_TOPICS "Gerade wüsstest du nichtüber was du reden solltest.";
 #Endif;
 #Ifndef TM_MSG_EXIT_OPTION;
-Constant TM_MSG_EXIT_OPTION "[ENTER] Beende Gesprch";
+Constant TM_MSG_EXIT_OPTION "[ENTER] Beende Gespräch";
 #Endif;
 #Ifndef TM_MSG_PAGE_OPTION;
-Constant TM_MSG_PAGE_OPTION "[N] Nchste Seite";
+Constant TM_MSG_PAGE_OPTION "[N] Nächste Seite";
 #Endif;
 
 #Ifndef TMPrintLine;
@@ -700,7 +700,7 @@ Array TenDashes static -> "----------";
    AfterRoutines();
 ];
 
-Verb 'rede' 'spreche' 'interviewe'
+Verb 'rede' 'spreche' 'interviewe' 'verhöre'
     *       'mit' creature             ->Talk
     *       creature                         ->Talk;
 

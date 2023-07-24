@@ -141,7 +141,7 @@ System_file;
 ];
 
 [ _AskWhichNoun p_num_matching_nouns _i;
-	print "Meinst du ";
+	print "Meintest du ";
 	for(_i = 1 : _i <= p_num_matching_nouns : _i++) {
 		if(_i > 1) {
 			if(_i == p_num_matching_nouns) {
@@ -692,12 +692,11 @@ Constant _PARSENP_CHOOSEOBJ_WEIGHT = 1000;
 	}
 
 	! check for pronouns
-	if(p_parse_pointer --> 0 == 'es' or 'ihn' or 'sie' or 'sie') {
+	if(p_parse_pointer --> 0 == 'es' or 'ihn' or 'sie') {
 		switch(p_parse_pointer --> 0) {
 		'es': _noun = itobj;
 		'ihn': _noun = himobj;
 		'sie': _noun = herobj;
-		'sie': _noun = themobj;
 		}
 		if(_noun == 0) {
 			phase2_necessary = PHASE2_ERROR;
@@ -1432,7 +1431,7 @@ Array guess_object-->5;
 
 	if(_noun == _assumed) _noun = 0;
 	if(_noun) {
-		print "(nimmt ";
+		print "(nehme ";
 		if(p_prep) {
 			print (address) (p_prep+1) --> 0, " ";
 		}
@@ -1685,7 +1684,7 @@ Array guess_object-->5;
 [ PronounNotice p_object;
 	if(p_object == 0 or player or Directions) return;
 	if(p_object has pluralname) {
-		themobj = p_object;
+		herobj = p_object;
 	} else {
 		if(p_object has female) herobj = p_object;
 		else if(p_object has neuter) itobj = p_object;

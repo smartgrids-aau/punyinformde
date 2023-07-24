@@ -29,9 +29,9 @@ Global menu_nesting;
 
 #IfV5;
 Zcharacter '@{0e4}';
-Zcharacter '';
+Zcharacter 'ö';
 Zcharacter '@{0fc}';
-Zcharacter '';
+Zcharacter 'ß';
 #EndIf;
 
 #IfV3;
@@ -57,11 +57,11 @@ Zcharacter '';
 	if(menu_nesting == 1) {
 		print "q: Spiel fortsetzen^";
 	} else {
-		print "q: Vorheriges Menu^";
+		print "q: Vorheriges Menü^";
 	}
 
 	for (::) {
-		print "^Whle 1 zu ", lines, " oder ENTER um die Optionen erneut anzuzeigen.^";
+		print "^Wähle 1 bis ", lines, " oder ENTER um die Optionen erneut anzuzeigen.^";
 		print "> ";
 
        _ReadPlayerInput(true);
@@ -86,10 +86,10 @@ Zcharacter '';
 #IfNot;
 ! v5+
 
-Constant NKEY__TX       = "N = nchstes Thema";
-Constant PKEY__TX       = "P = vorherig";
+Constant NKEY__TX       = "N = nächstes Thema";
+Constant PKEY__TX       = "P = vorheriges";
 Constant QKEY1__TX      = "  Q = Spiel fortsetzen";
-Constant QKEY2__TX      = "Q = vorheriges Men";
+Constant QKEY2__TX      = "Q = vorheriges Menü";
 Constant RKEY__TX       = "RETURN = Thema lesen";
 
 Constant NKEY1__KY      = 'N';
@@ -187,7 +187,7 @@ Constant QKEY2__KY      = 'q';
 			if (i == 2) jump _redisplay_menu;
 			if (i == 3) break;
 
-			print "^[Bitte drcke SPACE.]";
+			print "^[Bitte drücke die Leertaste.]";
 			@read_char 1 -> pkey; jump _redisplay_menu;
 		}
 	}

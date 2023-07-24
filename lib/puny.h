@@ -2058,7 +2058,7 @@ Include "parser.h";
 #Ifndef CUSTOM_PLAYER_OBJECT;
 Object selfobj "du"
 	with
-		name 'ich' 'selbst',
+		name 'mich',
 		short_name  "du",
 		description "Gut aussehend wie immer.",
 		before NULL,
