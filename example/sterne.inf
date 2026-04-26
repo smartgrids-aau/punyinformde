@@ -1,0 +1,438 @@
+!% -~S
+!% -Cu
+!% $OMIT_UNUSED_ROUTINES=1
+!% $ZCODE_LESS_DICT_DATA=1
+
+! Das Schiff der Sterne — Ein kurzes Textabenteuer mit PunyInform-DE
+! Demonstriert: Räume, Behälter, Träger, verschlossene Türen, betretbare Objekte,
+! Pronomensubstitution, Artikelsystem, NPC-Gespräche (ext_talk_menu),
+! Punkte, und konversations-abhängige Spiellogik.
+
+Constant Story      "Das Schiff der Sterne";
+Constant Headline   "^Ein kurzes Abenteuer auf hoher See.^";
+
+!Constant STATUSLINE_TIME; Statusline time;
+Constant STATUSLINE_SCORE; Statusline score;
+
+Constant OPTIONAL_SCORED;
+Constant MAX_SCORE = 5;
+
+Constant OPTIONAL_NO_DARKNESS;
+
+! ---------------------------------------------------------------------------
+! PunyInformDE-Konstanten
+! ---------------------------------------------------------------------------
+! USE_ASCII: Kommentiere aus für ASCII-Modus (Terminals ohne Unicode).
+! Im ASCII-Modus werden Umlaute als ae/oe/ue/ss geschrieben.
+!Constant USE_ASCII;
+
+! Optionale PunyInform-Features (nach Bedarf einkommentieren)
+!Constant DEBUG;
+!Constant OPTIONAL_SIMPLE_DOORS;
+!Constant OPTIONAL_EXTENDED_METAVERBS;
+!Constant OPTIONAL_EXTENDED_VERBSET;
+!Constant OPTIONAL_FLEXIBLE_INVENTORY;
+!Constant OPTIONAL_LIST_TOGETHER;
+!Constant OPTIONAL_PROVIDE_UNDO;
+
+Constant INITIAL_LOCATION_VALUE = Kajuete;
+
+Global talked_steuermann = false;
+Global talked_navigatorin = false;
+Global talked_papagei = false;
+Global has_steuermann_token = false;
+Global has_navigatorin_token = false;
+Global has_papagei_token = false;
+
+Constant TM_MSG_YOU "Du";
+Constant TM_MSG_TALK_ABOUT_WHAT "Gesprächsthemen:^";
+Constant TM_MSG_TOPICS_DEPLETED "Damit endet euer kurzes Gespräch.";
+Constant TM_MSG_EXIT "Damit beendest du das Gespräch.";
+Constant TM_MSG_NO_TOPICS "Im Moment fällt dir kein passendes Thema ein.";
+Constant TM_MSG_EXIT_OPTION "[ENTER] Gespräch beenden";
+Constant TM_MSG_PAGE_OPTION "[N] Nächste Seite";
+Constant TM_MSG_EXIT_OPTION_SHORT "[ENTER] Ende";
+Constant TM_MSG_PAGE_OPTION_SHORT "[N]ext";
+
+Include "globals.h";
+Include "ext_talk_menu.h";
+Include "puny.h";
+
+
+! ==================================================================
+! GRAMMATIK-HINWEISE FÜR SPIELAUTOREN
+! ==================================================================
+!
+! ARTIKELSYSTEM:
+! Objekte brauchen KEIN "with article ..." mehr. Das Artikelsystem
+! leitet den richtigen unbestimmten Artikel automatisch aus dem Genus ab:
+!
+!   has female    → "eine" (Nom/Akk), "einer" (Dat)
+!   has neuter    → "ein"  (Nom/Akk), "einem" (Dat)
+!   (kein Genus)  → "ein"  (maskulin, Standard)
+!   has pluralname → "einige" / kein unbestimmter Artikel
+!
+! "article" setzen nur für Ausnahmen:
+!   with article 0,       → kein Artikel (z.B. Eigennamen ohne Artikel)
+!   with article "so ein" → ungewöhnliche Form
+!
+! PRONOMENSUBSTITUTION:
+! Spieler können deutsche Pronomina eingeben:
+!
+!   "nimm ihn"    → nimmt das letzte maskuline Objekt (himobj)
+!   "nimm sie"    → nimmt das letzte feminine Objekt (herobj)
+!                   oder letzte Plural-Objekte (themobj)
+!   "nimm es"     → nimmt das letzte neutrale Objekt (itobj)
+!   "untersuche ihn"   → untersucht das letzte maskuline Objekt
+!   "gib ihnen das Buch" → gibt an die letzten Plural-Objekte
+!
+! Pronomenzuweisung:
+!   has female   → herobj  (Pronomen: sie/sie/ihr)
+!   has neuter   → itobj   (Pronomen: es)
+!   (maskulin)   → himobj  (Pronomen: er/ihn/ihm)
+!   has pluralname → themobj (Pronomen: sie/ihnen)
+!
+! WICHTIG: Unbelebte Objekte bekommen im Deutschen genus-abhängige
+! Pronomina (anders als im Englischen, wo alles "it" ist).
+
+! ==================================================================
+! RAUM 1: Die Kapitänskajüte
+! ==================================================================
+
+Object Kajuete "Die Kapitänskajüte"
+	with
+		description "Die enge Kajüte des Kapitäns auf dem Segelschiff Sternwind.
+			Ein alter Schreibtisch steht an der Nordwand, bedeckt mit
+			vergilbten Seekarten. Eine hölzerne Koje liegt an der Ostwand.
+			Eine schwere Eichentür führt nach Norden in den Schiffsgang.",
+		n_to [;
+			if (Kajuentuer has locked) {
+				"Die Tür ist fest verschlossen. Du brauchst wohl einen Schlüssel.";
+			}
+			if (Kajuentuer hasnt open) {
+				"Zuerst musst du die Tür öffnen.";
+			}
+			return Schiffsgang;
+		];
+
+! FEMININ: has female
+! Artikeltabelle → Nom: "die Kajütentür", Indef: "eine Kajütentür"
+! Pronomen → herobj → "sie": "schließ sie auf"
+! Kein "with article" nötig — der Artikel wird automatisch erzeugt.
+Object -> Kajuentuer "Kajütentür"
+	with
+		name 'tuer' 'tur' 'eichentuer' 'kajuetentuer' 'tür' 'kajütentür' 'eichentür',
+		description "Eine schwere Tür aus geöltem Eichenholz. Das alte Schloss
+			sieht sehr solide aus.",
+		with_key Schluessel,
+		before [;
+			Open: if (self has locked) "Die Tür ist noch verschlossen."; rfalse;
+		],
+		after [;
+			Unlock: if (score < 2) { score = score + 1; } rfalse;
+		],
+	has openable lockable locked female;
+
+! MASKULIN (Standard): kein has female, kein has neuter
+! Artikeltabelle → Nom: "der Schreibtisch", Indef: "ein Schreibtisch"
+! Kein "with article" nötig.
+Object -> Schreibtisch "Schreibtisch"
+	with
+		name 'schreibtisch' 'tisch',
+		description "Ein schwerer Eichenschreibtisch, bedeckt mit vergilbten Seekarten
+			und Notizen. Darauf liegen eine Seekarte, ein alter Kompass und
+			einige Goldmünzen.",
+	has supporter scenery;
+
+! FEMININ: has female
+! Artikeltabelle → "die Seekarte", Indef: "eine Seekarte"
+! Pronomen → herobj → "untersuche sie" / "nimm sie"
+! Mit adj "alt" wird die Adjektivendung kontextabhängig erzeugt:
+!   Nom: "eine alte Seekarte" / Akk: "die alte Seekarte" / Dat: "der alten Seekarte"
+Object -> -> Karte "Seekarte"
+	with
+		name 'karte' 'seekarte' 'alt' 'alte' 'alten' 'alter',
+		adj "alt",
+		description "Eine alte Seekarte des östlichen Ozeans. Ein roter Kreis
+			markiert eine kleine Insel weit im Osten. Daneben steht in
+			krakeliger Schrift: Das Fernrohr zeigt den Weg!",
+	has female;
+
+! MASKULIN (Standard): kein has female, kein has neuter
+! Artikeltabelle → "der Kompass", Indef: "ein Kompass"
+! Pronomen → himobj → "untersuche ihn" / "nimm er" / "leg ihn ab"
+! short_name ist nur das Nomen; Adjektiv kommt aus adj "alt".
+Object -> -> Kompass "Kompass"
+	with
+		name 'kompass' 'messing' 'alt' 'alter' 'alten',
+		adj "alt",
+		description "Ein alter Messing-Kompass mit einer zuverlässigen Nadel.
+			Auf dem Gehäuse ist ein Anker eingraviert.",
+	;
+! Hinweis: kein has female/neuter → maskulin (Standard) → "ein alter Kompass"
+
+! PLURAL: has pluralname
+! Artikeltabelle → "die Goldmünzen", Indef: "einige Goldmünzen"
+! Pronomen → themobj → "untersuche sie" (wenn kein herobj gesetzt) / "nimm sie"
+Object -> -> Muenzen "Goldmünzen"
+	with
+		name 'muenzen' 'geld' 'goldmuenzen' 'münzen' 'goldmünzen',
+		description "Fünf glänzende Goldmünzen mit dem Abbild eines Seeadlers.",
+	has pluralname;
+! Hinweis: has pluralname → kein unbestimmter Artikel → "die Münzen", "einige Münzen"
+
+! ------------------------------------------------------------------
+! Demoobjekte für Kasus + Adjektivflexion (Default-Examine-Meldung)
+!
+! Die Standardmeldung für Examine ohne eigene description lautet sinngemäß:
+! "Du erkennst nichts Besonderes an ..."  (Dativ!)
+! Damit können wir Dativ-Endungen einfach testen.
+! ------------------------------------------------------------------
+
+! Maskulin, ohne eigene description:
+! Examine → "... an dem kleinen Ring"
+Object -> -> Ring "Ring"
+	with
+		name 'ring' 'klein' 'kleiner' 'kleinen' 'kleinem',
+		adj "klein",
+	;
+
+! Feminin, ohne eigene description:
+! Examine → "... an der alten Nadel"
+Object -> -> Nadel "Nadel"
+	with
+		name 'nadel' 'alt' 'alte' 'alten' 'alter',
+		adj "alt",
+	has female;
+
+! Neutrum, ohne eigene description:
+! Examine → "... an dem feinen Tuch"
+Object -> -> Tuch "Tuch"
+	with
+		name 'tuch' 'fein' 'feine' 'feinen' 'feinem',
+		adj "fein",
+	has neuter;
+
+! FEMININ: has female + has enterable
+! Artikeltabelle → "die Koje", Indef: "eine Koje"
+Object -> Koje "Koje"
+	with
+		name 'koje',
+		description "Eine schmale Koje mit einer dünnen Matratze. Darunter steht
+			eine alte Kiste, deren Deckel mit einem Anker verziert ist.",
+	has enterable scenery female;
+
+! FEMININ: has female + has container
+! Artikeltabelle → "die Seekiste", Indef: "eine Seekiste"
+! Pronomen → herobj → "öffne sie", "schließ sie"
+Object -> Kiste "Seekiste"
+	with
+		name 'kiste' 'seekiste' 'truhe',
+		description "Eine alte, schwere Seekiste. Der Deckel ist mit einem
+			geschnitzten Anker verziert.",
+	has container openable female;
+
+! MASKULIN: kein has female/neuter
+! Artikeltabelle → "der Schlüssel", Indef: "ein kleiner Schlüssel"
+! Pronomen → himobj → "untersuche ihn", "nimm ihn"
+! Für Flexion wird der Stamm in adj gespeichert ("klein").
+Object -> -> Schluessel "Schlüssel"
+	with
+		name 'schluessel' 'klein' 'kleiner' 'kleinen' 'kleinem'
+			'messingschluessel' 'schlüssel' 'messingschlüssel',
+		adj "klein",
+		description "Ein kleiner Messingschlüssel mit einem Ankeranhänger --
+			passend zu dem alten Schloss an der Kajütentür.",
+		after [;
+			Take: if (score < 1) { score = score + 1; } rfalse;
+		];
+
+! ==================================================================
+! RAUM 2: Der Schiffsgang
+! ==================================================================
+
+Object Schiffsgang "Der Schiffsgang"
+	with
+		description "Ein enger Gang. Das Holz knarzt unter deinen Füßen.
+			Im Süden liegt die Kapitänskajüte. Eine rostige Eisentreppe
+			führt nach oben zum Deck. An der Wand hängt ein altes
+			Schiffsplakat, daneben eine kleine Signalglocke.",
+		s_to Kajuete,
+		u_to Oberdeck;
+
+! FEMININ: has female + has scenery
+! Artikeltabelle → "die Eisentreppe", Indef: "eine Eisentreppe"
+Object -> Treppe "Eisentreppe"
+	with
+		name 'treppe' 'eisentreppe' 'stiege' 'leiter',
+		description "Eine rostige Eisentreppe, die steil zum Oberdeck führt.",
+		before [;
+			Climb: PlayerTo(Oberdeck); rtrue;
+		],
+	has scenery female;
+
+Object -> Schiffsplakat "Schiffsplakat"
+	with
+		name 'plakat' 'schiffsplakat' 'anschlag' 'zettel',
+		description "Auf dem vergilbten Plakat steht: Ruhe im Gang. Keine
+			offenen Flammen unter Deck.",
+		before [;
+			Examine:
+				"Du liest: Ruhe im Gang. Keine offenen Flammen unter Deck.";
+		],
+	has scenery;
+
+Object -> Signalglocke "Signalglocke"
+	with
+		name 'glocke' 'signalglocke' 'messingglocke',
+		description "Eine kleine Messingglocke. Sie ist fest an der Wand
+			verschraubt und dient wohl als Alarmzeichen.",
+		before [;
+			Push, Pull, Touch:
+				"Die Glocke klingelt hell durch den ganzen Gang.";
+		],
+	has scenery;
+
+! ==================================================================
+! RAUM 3: Das Oberdeck
+! ==================================================================
+
+Object Oberdeck "Das Oberdeck"
+	with
+		description "Du stehst auf dem Oberdeck der Sternwind. Salzige Meeresluft
+			weht dir ins Gesicht. Ein mächtiger Mast ragt in den wolkenlosen
+			Abendhimmel. Im Westen glüht die untergehende Sonne.
+			Die Eisentreppe führt nach unten.",
+		d_to Schiffsgang;
+
+[MarkSteuermann;
+	talked_steuermann = true;
+	has_steuermann_token = true;
+	if (score < 4) { score = score + 1; }
+];
+
+[MarkPapagei;
+	talked_papagei = true;
+	has_papagei_token = true;
+	if (score < 4) { score = score + 1; }
+];
+
+[NavigatorinBriefing;
+	talked_navigatorin = true;
+	has_navigatorin_token = true;
+	if (score < 4) { score = score + 1; }
+	if(talked_steuermann && talked_papagei) {
+		print "^Die Navigatorin nickt. Mit ernstmimischer Miene überreicht sie dir ihren Kompass. Du hast ihn, die Karte und jetzt die drei Berichte der Crew. Alles deutet auf die Insel hin. Es wird Zeit, dass du das Fernrohr nutzt!^";
+	} else {
+		print "^Die Navigatorin zögert. Sprich zuerst mit dem Steuermann und dem Papagei. Mir fehlt noch das ganze Bild.^";
+		ReActivateTopic(Navigatorin, 320);
+	}
+];
+
+Array talk_array_Steuermann -->
+	TM_ACTIVE 310 "Wetter"
+		"Was siehst du dort draußen?"
+		"Steuermann Hinnerk kneift die Augen zusammen. Der Wind bleibt ruhig. Gute Sicht nach Osten."
+		MarkSteuermann
+	TM_END;
+
+Array talk_array_Navigatorin -->
+	TM_ACTIVE 320 "Kurs"
+		"Was ist unser Kurs?"
+		"Navigatorin Elara tippt auf die Seekarte. Der richtige Winkel fehlt noch."
+		NavigatorinBriefing
+	TM_END;
+
+Array talk_array_Papagei -->
+	TM_ACTIVE 330 "Spruch"
+		"Was hast du gehört, Molly?"
+		"Der Papagei krächzt laut: Wo ist Marten? BRAAK!"
+		MarkPapagei
+	TM_END;
+
+Object -> Steuermann "Steuermann Hinnerk"
+	with
+		name 'steuermann' 'hinnerk' 'mann' 'matrose',
+		description "Ein wettergegerbter Seemann steht breitbeinig am Steuer und
+			behält die See im Blick.",
+		talk_array talk_array_Steuermann,
+	has animate proper;
+
+Object -> Navigatorin "Navigatorin Elara"
+	with
+		name 'navigatorin' 'elara' 'frau',
+		description "Eine konzentrierte Navigatorin hält eine Karte gegen das
+			Abendlicht und notiert laufend Korrektionen.",
+		talk_array talk_array_Navigatorin,
+	has animate proper female;
+
+Object -> Papagei "Molly"
+	with
+		name 'papagei' 'molly' 'vogel',
+		description "Ein grün-roter Papagei hockt auf der Reling und beobachtet
+			dich mit schief gelegtem Kopf.",
+		talk_array talk_array_Papagei,
+		before [;
+			Listen:
+				"Molly klappert mit dem Schnabel und pfeift eine schräge Melodie.";
+		],
+	has animate proper;
+
+! MASKULIN (Standard): kein has female/neuter + has scenery
+! Artikeltabelle → "der Mast", Indef: "ein Mast"
+Object -> Mast "Mast"
+	with
+		name 'mast' 'hauptmast',
+		description "Der mächtige Hauptmast aus Kiefernholz. Ganz oben weht
+			eine schwarze Flagge mit einem silbernen Stern.",
+		before [;
+			Climb:
+				"Du versuchst den Mast hinaufzuklettern, rutschst aber ab
+				und landest wieder auf Deck.";
+		],
+	has scenery;
+
+! NEUTRUM: has neuter
+! Artikeltabelle → "das Fernrohr", Indef: "ein Fernrohr"
+! Pronomen → itobj → "untersuche es"
+Object -> Fernrohr "Messing-Fernrohr"
+	with
+		name 'fernrohr' 'teleskop' 'glas' 'fernglas',
+		description "Ein poliertes Messing-Fernrohr, schwer und elegant.",
+		before [;
+			Examine:
+				if(has_steuermann_token == false || has_papagei_token == false || has_navigatorin_token == false)
+					"Du richtest das Fernrohr aus, aber ohne Bericht aller drei Crew-Mitglieder verschwimmt alles im Dunst. Vielleicht solltest du erst mit der gesamten Besatzung sprechen.";
+				print "Du richtest das Messing-Fernrohr nach Osten und schaust hindurch.^
+Am Horizont, im letzten Licht der Sonne, liegt eine Insel! Auf einem^
+Felsen erkennst du deutlich ein eingemeiseltes Kreuz -- das Zeichen^
+für einen vergrabenen Schatz.^^";
+				print "Du senkst das Fernrohr und lächelst.^
+Die Seekarte, der Bericht des Steuermanns, der Papagei und die^
+Navigatorin hatten alle Recht gehabt!^^";
+				if (score < 5) { score = score + 1; }
+				deadflag = 2;
+				rtrue;
+		],
+	has neuter;
+! Hinweis: has neuter → "ein Fernrohr", Akkusativ: "das Fernrohr", Dativ: "dem Fernrohr"
+
+! MASKULIN (Standard): has scenery
+! Artikeltabelle → "der Rettungsring", Indef: "ein Rettungsring"
+Object -> Rettungsring "Rettungsring"
+	with
+		name 'rettungsring' 'ring',
+		description "Ein roter Rettungsring an der Reling. In weißen Buchstaben
+			steht STERNWIND darauf.",
+	has scenery;
+
+! ==================================================================
+! SPIELSTART
+! ==================================================================
+
+[Initialise;
+	print "^^Du wachst auf. Die Kajüte schwankt im Seegang, und^
+Licht fällt durch das kleine Bullauge. Du erinnerst dich:^
+Gestern Abend hat jemand deine Kajütentür von außen abgeschlossen.^
+Wer -- und warum? Es wird Zeit, das herauszufinden.^^";
+];

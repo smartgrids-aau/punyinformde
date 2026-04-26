@@ -33,13 +33,6 @@
 
 System_file;
 
-#IfV5;
-Zcharacter '@{0e4}';
-Zcharacter '@{0f6}';
-Zcharacter 'ü';
-Zcharacter 'ß';
-#EndIf;
-
 Constant EXT_WAITTIME = 1;
 
 Global waittime_waiting = false;
@@ -60,15 +53,15 @@ Constant MAX_WAIT_MINUTES 1440;
 	if (sys_statusline_flag == false) p_is_minutes = false;
 
 	if (noun == 0) {
-		"Die Zeit vergeht nicht.";
+		"Time doesn't pass.";
 	};
 
 	if ((p_is_minutes == false && noun > MAX_WAIT_MOVES) ||
 			(p_is_minutes && noun > MAX_WAIT_MINUTES)) {
-		"Du kannst nicht so lange warten.";
+		"That's too long to wait.";
 	};
 
-	print "Die Zeit vergeht.^";
+	print "Time passes.^";
 	waittime_waiting = true;
 	_time_left = noun;
 	_minutes_passed = 1; ! Unless p_is_minutes is set, this value won't change
@@ -77,7 +70,7 @@ Constant MAX_WAIT_MINUTES 1440;
 		_time_before = the_time;
 		EndTurnSequence();
 		_UpdateScoreOrTime();
-		#IfV3;
+		#Iftrue #version_number < 4;
 			@show_status;
 		#IfNot;
 			DrawStatusLine();
@@ -91,7 +84,7 @@ Constant MAX_WAIT_MINUTES 1440;
 	}
 	if(AfterRoutines() == false && waittime_waiting == 0 && _time_left > 0 &&
 			deadflag == GS_PLAYING)
-		print "^(du hast aufgehört zu warten)^";
+		print "^(waiting stopped)^";
 	waittime_waiting = 0;
 ];
 
@@ -110,7 +103,7 @@ Constant MAX_WAIT_MINUTES 1440;
 	if (parsed_number < the_time) {
 		parsed_number = the_time - parsed_number;
 		noun = 1440 - parsed_number;
-		print "(morgen)^^";
+		print "(tomorrow)^^";
 	}
 	WaitMovesSub(true);
 ];
@@ -131,7 +124,7 @@ Constant MAX_WAIT_MINUTES 1440;
 	if (sys_statusline_flag == false) return GPR_FAIL;
 
 	_i = NextWord();
-	if (_i == 'midday' or 'noon' or 'midnight') {    ! then case (e) applies
+	if (_i == 'midday' or 'noon' or 'midnight') {   ! then case (e) applies
 		if (_i == 'midnight')
 			_hr = 0;
 		else
@@ -243,22 +236,24 @@ Constant MAX_WAIT_MINUTES 1440;
 
 
 #Ifdef STATUSLINE_SCORE;
-	Extend 'warte'
-		* 'für' number 'runde'/'runden' -> WaitMoves
-		* 'für' number 'minute'/'minuten'            -> WaitMinutes
-		* 'für' number 'stunde'/'stunden'                -> WaitHours
-	    * number 'minute'/'minuten'                  -> WaitMinutes
-	    * number 'stunde'/'stunden'                      -> WaitHours
-		* number 'runde'/'runden'       -> WaitMoves
+	Extend 'wait'
+		* 'for' number 'move'/'moves'/'turn'/'turns' -> WaitMoves
+		* 'for' number 'minute'/'minutes'            -> WaitMinutes
+		* 'for' number 'hour'/'hours'                -> WaitHours
+		* number 'minute'/'minutes'                  -> WaitMinutes
+		* number 'hour'/'hours'                      -> WaitHours
+		* number 'move'/'moves'/'turn'/'turns'       -> WaitMoves
 		* number                                     -> WaitMoves;
 #Ifnot;
-	Extend 'warte'
-	    * 'bis' parsetime                          -> WaitUntil
-		* 'für' number 'runde'/'runden' -> WaitMoves
-		* 'für' number 'minute'/'minuten'            -> WaitMinutes
-		* 'für' number 'stunde'/'stunden'                -> WaitHours
-	    * number 'minute'/'minuten'                  -> WaitMinutes
-	    * number 'stunde'/'stunden'                      -> WaitHours
-		* number 'Runde'/'Runden'       -> WaitMoves
+	Extend 'wait'
+		* 'until' parsetime                          -> WaitUntil
+		* 'til' parsetime                            -> WaitUntil
+		* 'till' parsetime                           -> WaitUntil
+		* 'for' number 'move'/'moves'/'turn'/'turns' -> WaitMoves
+		* 'for' number 'minute'/'minutes'            -> WaitMinutes
+		* 'for' number 'hour'/'hours'                -> WaitHours
+		* number 'minute'/'minutes'                  -> WaitMinutes
+		* number 'hour'/'hours'                      -> WaitHours
+		* number 'move'/'moves'/'turn'/'turns'       -> WaitMoves
 		* number                                     -> WaitMoves;
 #Endif;

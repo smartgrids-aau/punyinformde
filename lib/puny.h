@@ -23,22 +23,40 @@
 
 System_file;
 
-Include "messages.h";
+Include "de/article_de.h";
+Include "de/messages_de.h";
 
 
 ! ######################### Include utility files
 
-Include "grammar.h";
+Include "de/grammar_de.h";
 
 ! ######################### Helper routines
-[ UnsignedCompare p_x p_y _u _v;
-	if (p_x == p_y) return 0;
-	if (p_x < 0 && p_y >= 0) return 1;
-	if (p_x >= 0 && p_y < 0) return -1;
-	_u = p_x&~WORD_HIGHBIT; _v = p_y&~WORD_HIGHBIT;
-	if (_u > _v) return 1;
+
+[ Unsigned__Compare p_x p_y;
+	@jl p_x 0 ?_x_negative;
+	! x >= 0
+	@jl p_y 0 ?~_x_positive_y_positive;
+	! x >= 0 and y < 0
 	return -1;
+._x_negative;
+	@jl p_y 0 ?~rtrue; ! x < 0 and y >= 0
+	! x < 0 && y < 0
+._x_positive_y_positive;
+	! x and y have same sign
+	@jg p_x p_y ?rtrue;
+	@je p_x p_y ?rfalse;
+	return -1;
+! Original implementation:
+!	if (p_x == p_y) return 0;
+!	if (p_x < 0 && p_y >= 0) return 1;
+!	if (p_x >= 0 && p_y < 0) return -1;
+!	_u = p_x&~WORD_HIGHBIT; _v = p_y&~WORD_HIGHBIT;
+!	if (_u > _v) return 1;
+!	return -1;
 ];
+
+Constant UnsignedCompare = Unsigned__Compare;
 
 #Ifdef OPTIONAL_MANUAL_SCOPE;
 [ RunEntryPointRoutine p_routine;
@@ -54,48 +72,29 @@ Include "grammar.h";
 ];
 #Endif;
 
-[ IndirectlyContains p_o1 p_o2;
-	! Does o1 indirectly contain o2?  (Same as testing if o1 is one of the ancestors of o2.)
-	while (p_o2 ~= 0) {
-		if (p_o1 == p_o2) rtrue;
-		!        if (p_o2 ofclass Class) rfalse;
-		p_o2 = parent(p_o2);
-	}
-	rfalse;
-];
-
-[ CommonAncestor p_o1 p_o2 _i _j;
-    ! Find the nearest object indirectly containing o1 and o2,
-    ! or return 0 if there is no common ancestor.
-    _i = p_o1;
-    while (_i) {
-        _j = p_o2;
-        while (_j) {
-            if (_j == _i) return _i;
-            _j = parent(_j);
-        }
-        _i = parent(_i);
-    }
-    return 0;
-];
-
-#Ifv3;
+#Iftrue #version_number < 5;
 [ ChangeFgColour p_colour;
 	p_colour = 1; ! Avoid warning
 ];
 #Endif;
 
-#IfV5;
+#Iftrue #version_number > 4;
+
+[ OzmooColoursAvailable;
+	if($3a-->0 == $4f5a)
+		rtrue;
+	rfalse;
+];
 
 [ ClearScreen window;
 	if (clr_on) {
 		@set_colour clr_fg clr_bg;
 	}
-    switch (window) {
-      WIN_ALL:    @erase_window -1;
-      WIN_STATUS: @erase_window 1;
-      WIN_MAIN:   @erase_window 0;
-    }
+	switch (window) {
+	  WIN_ALL:	@erase_window -1;
+	  WIN_STATUS: @erase_window 1;
+	  WIN_MAIN:   @erase_window 0;
+	}
 ];
 
 [ ChangeFgColour p_colour;
@@ -104,8 +103,14 @@ Include "grammar.h";
 		@set_colour clr_fg CLR_CURRENT;
 	}
 ];
+#Endif;
 
+#Iftrue #version_number > 3;
+! Statusline routines, for z4+
+
+#Ifdef OPTIONAL_NON_FLASHING_STATUSLINE;
 Array cursor_pos --> 2;
+#Endif;
 
 [ _StatusLineHeight p_height;
 	if (statusline_current_height ~= p_height) {
@@ -118,9 +123,11 @@ Array cursor_pos --> 2;
 [ _MoveCursor line column;  ! 1-based postion on text grid
 	if (~~statuswin_current) {
 		@set_window 1;
+#Iftrue #version_number > 4;
 		if (clr_on && clr_fgstatus > 1) {
 			@set_colour clr_fgstatus clr_bg;
 		}
+#Endif;
 		style reverse;
 	}
 	if (line == 0) {
@@ -133,18 +140,18 @@ Array cursor_pos --> 2;
 
 [ _MainWindow;
 	if (statuswin_current) {
+#Iftrue #version_number > 4;
 		if (clr_on && clr_fgstatus > 1) {
 			@set_colour clr_fg clr_bg;
 		}
+#Endif;
 		style roman;
 		@set_window 0;
 	}
 	statuswin_current = false;
 ];
 
-
-Array TenSpaces -> "          ";
-
+#Ifdef OPTIONAL_NON_FLASHING_STATUSLINE;
 [ _PrintSpacesOrMoveBack p_col p_string _current_col;
 	p_col = screen_width - p_col;
 
@@ -159,21 +166,39 @@ Array TenSpaces -> "          ";
 	if(p_string)
 		print (string) p_string;
 ];
+#Ifnot;
+[ _PrintSpacesOrMoveBack p_col p_string;
+	p_col = screen_width - p_col;
+
+	_MoveCursor(1, p_col);
+
+	if(p_string)
+		print (string) p_string;
+];
+#Endif;
+
 
 Constant ONE_SPACE_STRING = " ";
 
+#Ifndef STATUSLINE_SCORE;
 [ _PrintStatusLineTime _h _pm;
-	if (screen_width > 29) {
-		if (screen_width > 39) {
+	if (screen_width > 30) {
+#Ifndef OPTIONAL_NON_FLASHING_STATUSLINE;
+		parser_one = 1;
+#Endif;
+		if (screen_width > 36) {
 			if (screen_width > 66) {
 				! Width is 67-, print "Time: 12:34 pm" with some space to the right
 				_PrintSpacesOrMoveBack(20, TIME__TX);
+#Ifndef OPTIONAL_NON_FLASHING_STATUSLINE;
+				parser_one = 6;
+#Endif;
 			} else {
-				! Width is 40-66, print "Time: 12:34 pm" at right edge
+				! Width is 37-66, print "Time: 12:34 pm" one character fromm right edge
 				_PrintSpacesOrMoveBack(15, TIME__TX);
 			}
 		} else {
-			! Width is 30-, print "12:34 pm" at right edge
+			! Width is 31-, print "12:34 pm" one character from right edge
 			_PrintSpacesOrMoveBack(9, ONE_SPACE_STRING);
 		}
 		_h = status_field_1;
@@ -184,32 +209,73 @@ Constant ONE_SPACE_STRING = " ";
 			_h = _h - 12;
 		}
 		if(_h < 1) print 12; else print _h;
+#Ifndef OPTIONAL_NON_FLASHING_STATUSLINE;
+		if(_h ~= 0 && _h<10) parser_one++;
+#Endif;
 		@print_char ':';
 		if (status_field_2<10)
 			@print_char '0';
 		print status_field_2;
 		if (_pm)
-			print " Nachmittag";
+			print " PM";
 		else
-			print " Vormittag";
+			print " AM";
 	}
 ];
+#Endif; ! Ifndef STATUSLINE_SCORE
 
-[ _PrintStatusLineScore;
+[ _NumberLength p_number _length;
+	_length = 1;
+	if(p_number < 0) { _length++; p_number = -p_number; }
+	if(p_number > 9) {
+		_length++;
+		if(p_number > 99) {
+			_length++;
+			if(p_number > 999) {
+				_length++;
+				if(p_number > 9999) {
+					_length++;
+				}
+			}
+		}
+	}
+	return _length;
+];
+
+#Ifndef STATUSLINE_TIME;
+[ _PrintStatusLineScore field_1_length field_2_length;
+#Ifdef OPTIONAL_SL_NO_SCORE;
+	field_1_length = 0;
+#Ifnot;
+	field_1_length = _NumberLength(status_field_1);
+#Endif;
+#Ifdef OPTIONAL_SL_NO_MOVES;
+	field_2_length = 0;
+#Ifnot;
+	field_2_length = _NumberLength(status_field_2);
+#Endif;
+
 #Ifdef OPTIONAL_SL_NO_SCORE;
 #Ifndef OPTIONAL_SL_NO_MOVES;
 	! Show moves only
 	if (screen_width > 25) {
-		if (screen_width < 30) {
-			! Width is 25-29, only print moves as "0"
-			_PrintSpacesOrMoveBack(4, ONE_SPACE_STRING);
+		if (screen_width < 29) {
+			! Width is 26-28, only print moves as "0"
+			_PrintSpacesOrMoveBack(field_2_length, ONE_SPACE_STRING);
 		} else {
-			! Width is 30-, print "Moves: 0"
+			! Width is 29+
 			if (screen_width > 52) {
-				! Width is 53+, leave some space to the right
-				_PrintSpacesOrMoveBack(15, MOVES__TX);
+				! Width is 53+, print "Moves: 0" and leave some space to the right
+				_PrintSpacesOrMoveBack(13, MOVES__TX);
+#Ifndef OPTIONAL_NON_FLASHING_STATUSLINE;
+				parser_one = 6 - field_2_length;
+#Endif;
+			} else if (screen_width < 33) {
+				! Width is 29-32, print "Mv:0"
+				_PrintSpacesOrMoveBack(3 + field_2_length, MOVES_SHORT__TX);
 			} else {
-				_PrintSpacesOrMoveBack(11, MOVES__TX);
+				! Width is 33-52, print "Moves: 0"
+				_PrintSpacesOrMoveBack(7 + field_2_length, MOVES__TX);
 			}
 		}
 		print status_field_2;
@@ -218,36 +284,54 @@ Constant ONE_SPACE_STRING = " ";
 #Ifnot;
 	! Show score and maybe moves
 	if (screen_width > 24) {
-		if (screen_width < 30) {
-			! Width is 25-29, only print score as "0", no moves
-			_PrintSpacesOrMoveBack(3, ONE_SPACE_STRING);
+		if (screen_width < 28) {
+			! Width is 25-27, only print score as "0", no moves
+			_PrintSpacesOrMoveBack(field_1_length, ONE_SPACE_STRING);
 			print status_field_1;
 		} else {
 #Ifdef OPTIONAL_SL_NO_MOVES;
-	! Show score only
-			! Width is 30-, print "Score: 0"
-			if(screen_width < 55)
-				_PrintSpacesOrMoveBack(10, SCORE__TX);
-			else
-				_PrintSpacesOrMoveBack(13, SCORE__TX);
+		! Show score only
+			if(screen_width < 32) {
+				! Width is 28-31, print "Sc:0"
+				_PrintSpacesOrMoveBack(3 + field_1_length, SCORE_SHORT__TX);
+			} else if(screen_width < 55) {
+				! Width is 32-54, print "Score: 0"
+				_PrintSpacesOrMoveBack(7 + field_1_length, SCORE__TX);
+			} else {
+				! Width is 55+, print "Score: 0" and leave some space at end
+				_PrintSpacesOrMoveBack(12, SCORE__TX);
+#Ifndef OPTIONAL_NON_FLASHING_STATUSLINE;
+				parser_one = 5 - field_1_length;
+#Endif;
+			}
 			print status_field_1;
 #Ifnot;
 	! Show score + moves
 			if (screen_width > 66) {
 				! Width is 67-, print "Score: 0 Moves: 0"
-				_PrintSpacesOrMoveBack(28, SCORE__TX);
+				_PrintSpacesOrMoveBack(27, SCORE__TX);
 				print status_field_1;
-				_PrintSpacesOrMoveBack(14, MOVES__TX);
+#Ifdef OPTIONAL_NON_FLASHING_STATUSLINE;
+				_PrintSpacesOrMoveBack(15, MOVES__TX);
+#Ifnot;
+				FastSpaces(6 - field_1_length);
+				print (string) MOVES__TX;
+				parser_one = 6 - field_2_length ;
+#Endif;
 			} else {
-				if (screen_width > 36) {
-					! Width is 37-66, print "Score: 0/0"
-					_PrintSpacesOrMoveBack(15, SCORE__TX);
+				if (screen_width > 35) {
+					! Width is 36-66, print "Sc:0 Mv:0"
+					_PrintSpacesOrMoveBack(7 + field_1_length + 
+											field_2_length, SCORE_SHORT__TX);
+					print status_field_1;
+					print (string) MOVES_SHORT__TX;
 				} else {
-					! Width is 29-35, print "0/0"
-					_PrintSpacesOrMoveBack(8, ONE_SPACE_STRING);
+					! Width is 30-36, print "0:0"
+					_PrintSpacesOrMoveBack(1 + field_1_length + 
+											field_2_length, ONE_SPACE_STRING);
+					print status_field_1;
+					@print_char ':';
 				}
-				print status_field_1;
-				@print_char '/';
 			}
 			print status_field_2;
 #Endif;
@@ -255,15 +339,20 @@ Constant ONE_SPACE_STRING = " ";
 	}
 #Endif;
 ];
+#Endif; ! Ifndef STATUSLINE_TIME
 
-[ DrawStatusLine _visibility_ceiling;
+[ DrawStatusLine p_linefeeds _visibility_ceiling;
 	! For wide screens (67+ columns):
 	! * print a space before room name, and "Score: xxx  Moves: xxxx" to the right.
 	! * Room names up to 39 characters are never truncated.
 	! For narrow screens:
 	! * No space before room name
-	! * Print "Score: xxx/yyyy", "xxx/yyyy", "xxx" or nothing, depending on screen width
-	! * Room names up to 21 characters are never truncated. On a 40 column screen, room names up to 24 characters are never truncated.
+	! * Print "Sc:xxx Mv:yyyy", "xxx:yyyy", "xxx" or nothing, depending on screen width
+	! * Room names up to 21 characters are never truncated. On a 40 column screen, room names up to 25 characters are never truncated.
+
+	! If called with p_linefeeds == true, print the number of linefeeds needed
+	! to make sure text at start of game doesn't get covered by statusline
+	if(p_linefeeds) { new_line; return; }
 
 	! If there is no player location, we shouldn't try to draw status window
 	if (location == nothing || parent(player) == nothing)
@@ -271,6 +360,11 @@ Constant ONE_SPACE_STRING = " ";
 
 	_StatusLineHeight(statusline_height);
 	_MoveCursor(1, 1); ! This also sets the upper window as active.
+#Ifndef OPTIONAL_NON_FLASHING_STATUSLINE;
+	parser_one = 1000;
+	FastSpaces(screen_width);
+	_MoveCursor(1, 1);
+#Endif;
 	if(screen_width > 66) @print_char ' ';
 
 	_visibility_ceiling = ScopeCeiling(player);
@@ -301,11 +395,16 @@ Constant ONE_SPACE_STRING = " ";
 	#Endif;
 #Endif;
 
+#Ifdef OPTIONAL_NON_FLASHING_STATUSLINE;
 	! Regardless of what kind of status line we have printed, print spaces to the end.
 	_PrintSpacesOrMoveBack(-1);
+#Ifnot;
+	if(parser_one > 0 && parser_one < screen_width) 
+		FastSpaces(parser_one);
+#Endif;
 	_MainWindow(); ! set_window
 ];
-#EndIf;
+#Endif;
 
 [ ObjectCapacity p_obj;
 	if(p_obj provides capacity)
@@ -314,11 +413,11 @@ Constant ONE_SPACE_STRING = " ";
 ];
 
 [ _AtFullCapacity p_s _obj _k;
-    if (p_s == player) {
-        objectloop (_obj in p_s)
-            if (_obj hasnt worn) _k++;
-    } else
-        _k = children(p_s);
+	if (p_s == player) {
+		objectloop (_obj in p_s)
+			if (_obj hasnt worn) _k++;
+	} else
+		_k = children(p_s);
 #IfDef SACK_OBJECT;
 	if (_k < ObjectCapacity(p_s) || (p_s == player && _RoomInSack())) rfalse;
 #IfNot;
@@ -328,69 +427,109 @@ Constant ONE_SPACE_STRING = " ";
 
 #IfDef SACK_OBJECT;
 [ _RoomInSack _obj _ks;
-    if (SACK_OBJECT in player) {
-        for (_obj=youngest(player) : _obj : _obj=elder(_obj)) {
+	if (SACK_OBJECT in player) {
+		for (_obj=youngest(player) : _obj : _obj=elder(_obj)) {
 #Ifdef OPTIONAL_NO_DARKNESS;
-            if (_obj ~= SACK_OBJECT && _obj hasnt worn) {
+			if (_obj ~= SACK_OBJECT && _obj hasnt worn) {
 #Ifnot;
-            if (_obj ~= SACK_OBJECT && _obj hasnt worn or light) {
+			if (_obj ~= SACK_OBJECT && _obj hasnt worn or light) {
 #Endif;
-                _ks = keep_silent;
-                keep_silent = 1;
-                <Insert _obj SACK_OBJECT>;
-                keep_silent = _ks;
-                if (_obj in SACK_OBJECT) {
-                    if (keep_silent == 0) PrintMsg(MSG_SACK_PUTTING, _obj);
-                    rtrue;
-                }
-            }
+				_ks = keep_silent;
+				keep_silent = 1;
+				<Insert _obj SACK_OBJECT>;
+				keep_silent = _ks;
+				if (_obj in SACK_OBJECT) {
+					if (keep_silent == 0) PrintMsg(MSG_SACK_PUTTING, _obj);
+					rtrue;
+				}
+			}
 		}
-    }
-    rfalse;
+	}
+	rfalse;
 ];
 #EndIf;
 
-#IfDef DEBUG;
+!#IfDef DEBUG;
 #IfnDef DebugParseNameObject;
 [ DebugParseNameObject p_obj;
 	@inc p_obj; ! Just to get rid of warning that p_obj isn't used
 	rfalse;
 ];
 #Endif;
+!#Endif;
+
+#Ifdef IsARoom;
+[ _RoomLike p_obj _verdict _return_code;
+#Ifnot;
+[ _RoomLike p_obj _verdict;
 #Endif;
+
+	! Return true if p_obj seems to be a room
+	if(p_obj > Directions && p_obj <= top_object && p_obj in nothing
+			&& p_obj provides description
+			&& (~~(p_obj provides describe or life or found_in))
+			&& (~~DebugParseNameObject(p_obj))) {
+		if(p_obj has edible or talkable or supporter or container or transparent
+				or concealed or scenery or static or animate or clothing
+				or pluralname or switchable or door or lockable)
+			jump _decided;
+#Ifndef OPTIONAL_NO_DARKNESS;
+		if(p_obj == thedark) jump _decided;
+#Endif;
+		_verdict = true;
+	}
+._decided;
+#Ifdef IsARoom;
+	_return_code = IsARoom(p_obj, _verdict);
+	if(_return_code)
+		_verdict = 2 - _return_code;
+#Endif;
+	return _verdict;
+];
+
+[ _ObjectLike p_obj;
+	if(p_obj > Directions && p_obj <= top_object && p_obj notin Class && _RoomLike(p_obj) == false) {
+#Ifndef OPTIONAL_NO_DARKNESS;
+		if(p_obj == thedark) rfalse;
+#Endif;	
+		rtrue;
+	}
+	rfalse;
+];
+
 
 #Ifdef OPTIONAL_LANGUAGE_NUMBER;
 
 [ LanguageNumber n f;
-    if (n == 0)    { print "null"; rfalse; }
-    if (n < 0)     { print "minus "; n = -n; }
-    if (n >= 1000) { print (LanguageNumber) n/1000, " tausend"; n = n%1000; f = 1; }
-    if (n >= 100)  {
-        if (f == 1) print ", ";
-        print (LanguageNumber) n/100, " hundert"; n = n%100; f = 1;
-    }
-    if (n == 0) rfalse;
-    #Ifdef DIALECT_US;
-    if (f == 1) print " ";
-    #Ifnot;
-    if (f == 1) print " und ";
-    #Endif;
+	if (n == 0)	{ print "zero"; rfalse; }
+	if (n < 0)	 { print "minus "; n = -n; }
+	if (n >= 1000) { print (LanguageNumber) n/1000, " thousand"; n = n%1000; f = 1; }
+	if (n >= 100)  {
+		if (f == 1) print ", ";
+		print (LanguageNumber) n/100, " hundred"; n = n%100; f = 1;
+	}
+	if (n == 0) rfalse;
+	#Ifdef DIALECT_US;
+	if (f == 1) print " ";
+	#Ifnot;
+	if (f == 1) print " and ";
+	#Endif;
 #Ifdef OPTIONAL_ALLOW_WRITTEN_NUMBERS;
-#IfV3;
+#Iftrue #version_number < 4;
 	if(n < 13 || n == 20)
 		print (address) LanguageNumbers-->(2 * n - 1);
 	else if(n < 20)
 		print (string) LanguageNumberStrings-->(n - 13);
 	else {
 		print (string) LanguageNumberTensStrings-->(n / 10 - 2);
-        if (n%10 ~= 0) print "-", (LanguageNumber) n%10;
+		if (n%10 ~= 0) print "-", (LanguageNumber) n%10;
 	}
-#Ifnot;
+#Ifnot; ! z4+
 	if(n < 21)
 		print (address) LanguageNumbers-->(2 * n - 1);
 	else {
 		print (string) LanguageNumberTensStrings-->(n / 10 - 2);
-        if (n%10 ~= 0) print "-", (LanguageNumber) n%10;
+		if (n%10 ~= 0) print "-", (LanguageNumber) n%10;
 	}
 #Endif;
 #Ifnot;
@@ -398,7 +537,7 @@ Constant ONE_SPACE_STRING = " ";
 		print (string) LanguageNumberStrings-->(n - 1);
 	else {
 		print (string) LanguageNumberTensStrings-->(n / 10 - 2);
-        if (n%10 ~= 0) print "-", (LanguageNumber) n%10;
+		if (n%10 ~= 0) print "-", (LanguageNumber) n%10;
 	}
 #Endif;
 ];
@@ -407,39 +546,29 @@ Constant ONE_SPACE_STRING = " ";
 
 
 [ PrintShortName o;
-    if (o == 0) { print "nothing"; rtrue; }
-    switch (metaclass(o)) {
-      Routine:  print "<routine ", o, ">"; rtrue;
-      String:   print "<string ~", (string) o, "~>"; rtrue;
-      nothing:  print "<illegal object number ", o, ">"; rtrue;
-    }
-    if (o.short_name ~= 0 && PrintOrRun(o, short_name, true) ~= 0) rtrue;
-    print (object) o;
+	if(caps_mode == 2) 
+		caps_mode = true;
+	else 
+		caps_mode = false;
+	if (o == 0) { print "nothing"; rtrue; }
+	switch (metaclass(o)) {
+	  Routine:  print "<routine ", o, ">"; rtrue;
+	  String:   print "<string ~", (string) o, "~>"; rtrue;
+	  nothing:  print "<illegal object number ", o, ">"; rtrue;
+	}
+	if (o.short_name ~= 0 && PrintOrRun(o, short_name, true) ~= 0) rtrue;
+	print (object) o;
 ];
 
+! PunyInformDE: German override — Artikel aus Tabellen (§1 Artikelsystem).
+! Nominativ bestimmt/unbestimmt via DE_DefArticles/DE_IndefArticles.
+! Für Akkusativ/Dativ in Nachrichten: (DE_Den)/(DE_Dem) etc. verwenden.
 [ _PrintObjName p_obj p_form;
-	if(p_obj hasnt proper) {
-		if(p_form == FORM_CDEF) {
-      if (p_obj has female) print "Die ";
-      else if (p_obj has neuter) print "Das ";
-      else print "Der ";
-  } else if(p_form == FORM_DEF) {
-        if (p_obj has female) print "die ";
-        else if (p_obj has neuter) print "das ";
-        else print "der ";
-  } else if(p_form == FORM_INDEF) {
-			if(p_obj.&article) {
-				PrintOrRun(p_obj, article, true);
-				print " ";
-			}
-			else if(p_obj has pluralname)
-				print "ein paar ";
-			else {
-        if (p_obj has female) print "eine ";
-        else if (p_obj has neuter) print "ein ";
-        else print "einen ";
-      }
-    }
+	caps_mode = false;
+	if (p_form == FORM_CDEF) caps_mode = 2;
+	if (p_obj hasnt proper) {
+		_DE_PrintObjByForm(p_obj, p_form, short_name_case);
+		return;
 	}
 	PrintShortName(p_obj);
 ];
@@ -449,39 +578,54 @@ Constant ONE_SPACE_STRING = " ";
 	return IS_STR;
 ];
 
-[ _PrintAfterEntry p_obj;
+! PunyInformDE: German override for object state descriptions
+[ _PrintAfterEntry p_obj _contents _newline _started;
+	_newline = c_style & NEWLINE_BIT;
 #Ifndef OPTIONAL_NO_DARKNESS;
-	if(p_obj has light && p_obj hasnt animate) print " (spendet Licht)";
+	if(p_obj has light && p_obj hasnt animate) print " (gibt Licht)";
 #Endif;
 	if(p_obj has worn && action == ##Inv) print " (getragen)";
-	if(p_obj has container && p_obj hasnt open) print " (geschlossen)";
-	if(p_obj has container && (p_obj has open || p_obj has transparent)) {
-		if(PrintContentsFromR(1, child(p_obj)) == 0) {
-			print " (leer)";
-			if(c_style & NEWLINE_BIT)
-				new_line;
+	if(p_obj has container) {
+		_contents = PrintContentsFromR(1, child(p_obj));
+		if(p_obj hasnt open && p_obj hasnt transparent) {
+			print " (geschlossen)";
+			if(_newline) new_line;
 		} else {
-			if(c_style & NEWLINE_BIT == 0)
-				print " (beinhaltet ";
-			else {
-				if(p_obj has open)
-					print " (offen)";
-				new_line;
+			if(p_obj has openable && (p_obj has transparent || _contents == 0)) {
+				print " (";
+				if(p_obj has open) { print "offen"; _started = 1; }
+				else { print "geschlossen"; _started = 2; }
 			}
-			c_style = c_style & ~ISARE_BIT;
-			PrintContentsFromR(0, child(p_obj));
-			if(c_style & NEWLINE_BIT == 0) {
-				print (char) ')';
+			if(_contents == 0) {
+				print (char) ' ';
+				switch(_started) {
+				0: print "(",(IsorAre) p_obj;
+				1: print "aber";
+				2: print "und";
+				}
+				print " leer)";
+				if(_newline) new_line;
+			} else {
+				if(_newline == 0) {
+					if(_started) print " und";
+					else print " (enthält";
+					print " ";
+				} else {
+					if(_started) print (char) ')';
+					new_line;
+				}
+				c_style = c_style & ~ISARE_BIT;
+				PrintContentsFromR(0, child(p_obj));
+				if(_newline == 0) print (char) ')';
 			}
 		}
-
 	} else if(p_obj has supporter) {
-		if(c_style & NEWLINE_BIT) {
+		if(_newline) {
 			new_line;
 			PrintContentsFromR(0, child(p_obj));
 		} else
-			if(PrintContents(" (darauf ", p_obj, ISARE_BIT )) print (char) ')';
-	} else if(c_style & NEWLINE_BIT)
+			if(PrintContents(" (worauf ", p_obj, ISARE_BIT)) print (char) ')';
+	} else if(_newline)
 		new_line;
 ];
 
@@ -563,7 +707,7 @@ Constant ONE_SPACE_STRING = " ";
 	_count = 0;
 	for(_obj = p_obj: _obj ~= 0: _obj = NextEntry(_obj, pc_depth)) _count++;
 
-	if(lt_value ofclass String) {
+	if(IsAString(lt_value)) {
 		if(c_style & NEWLINE_BIT) {
 			FastSpaces(pc_indent);
 		}
@@ -642,9 +786,9 @@ Constant ONE_SPACE_STRING = " ";
 !   - If p_first_text is a routine, it will be called with p_obj as argument
 !   - If p_first_text is 0, no prefix string will be printed
 !   - If p_first_text is 1, don't print anything, but return:
-!       0 if there are no printable objects in/on p_obj
-!       1 if there's exactly one printable object and it doesn't have pluralname
-!       2 if there are 2+ printable objects or one object with pluralname
+!	   0 if there are no printable objects in/on p_obj
+!	   1 if there's exactly one printable object and it doesn't have pluralname
+!	   2 if there are 2+ printable objects or one object with pluralname
 	_bak_style = c_style; _bak_depth = pc_depth; _bak_indent = pc_indent;
 	_bak_inv_stage = inventory_stage;
 	c_style = p_style; pc_depth = pc_initial_depth - 1; pc_indent = 2 + 2 * pc_depth;
@@ -729,7 +873,7 @@ Constant ONE_SPACE_STRING = " ";
 
 		if(_show_obj) {
 			if(_last_obj == 0) {
-				if(p_first_text ofclass String)
+				if(IsAString(p_first_text))
 					print (string) p_first_text;
 				else if(p_first_text ~= 0)
 					p_first_text(parent(p_obj));
@@ -768,7 +912,7 @@ Constant ONE_SPACE_STRING = " ";
 	}
 
 	if(_last_obj) {
-		if(_printed_any_objects ~= 0 && c_style & NEWLINE_BIT == 0) print " und ";
+		if(_printed_any_objects ~= 0 && c_style & NEWLINE_BIT == 0) print (string) AND_LIST_STR;
 #Ifdef OPTIONAL_LIST_TOGETHER;
 		if(_last_obj_was_LT_special)
 			_PrintContentsPrintLTGroup(_last_obj);
@@ -786,7 +930,7 @@ Constant ONE_SPACE_STRING = " ";
 
 [ _PrintContentsShowObj p_obj;
 	! Return true if object should be shown in list, false if not
-	if(p_obj ~= parent(player) && ! don't print container when player in it
+	if(IndirectlyContains(p_obj, player) == false && ! don't print container when player in it 
 			(pc_depth > 0 || c_style & WORKFLAG_BIT == 0 || p_obj has workflag) &&
 	! Hide concealed and scenery unless taking inventory
 			(action == ##Inv || (p_obj hasnt concealed && p_obj hasnt scenery)))
@@ -811,89 +955,245 @@ Constant ONE_SPACE_STRING = " ";
 			if(PrintOrRun(p_obj, invent, true)) rtrue;
 		}
 		_PrintAfterEntry(p_obj);
-	} else if(c_style & NEWLINE_BIT) 
+	} else if(c_style & NEWLINE_BIT)
 		new_line;
 
 ];
 
+Array _SpaceTable static -> "                    ";
+Constant _SpaceTableLength 20;
+
 [ FastSpaces p_spaces;
-#Ifv3;
+#Iftrue #version_number < 5;
 	while(p_spaces >= 6) {
 		print "      ";
 		p_spaces = p_spaces - 6;
 	}
-	for( : p_spaces > 0 : p_spaces--) @print_char ' ';
+	@jl p_spaces 1 ?rtrue;
+._print_space;
+	@print_char ' ';
+	@dec_chk p_spaces 1 ?~_print_space;
 #Ifnot;
-	while(p_spaces > 10) {
-		@print_table TenSpaces 10 1;
-		p_spaces = p_spaces - 10;
+	if(p_spaces >= _SpaceTableLength) {
+._print_table_again;
+		@print_table _SpaceTable _SpaceTableLength 1;
+		p_spaces = p_spaces - _SpaceTableLength;
+		@jl p_spaces _SpaceTableLength ?~_print_table_again; 
 	}
-	@print_table TenSpaces p_spaces 1;
+	@jl p_spaces 1 ?rtrue;
+	@print_table _SpaceTable p_spaces 1;
 #Endif;
 ];
 
-[ RunRoutines p_obj p_prop p_switch;
+[ _IsARoutine_Case1 p_value;
+	! Decide if a value is a routine address, faster than using ofclass
+	! For the ideas behind this implementation, see comments in RunRoutines
+	! Case 1, code_offset > 0 && strings_offset > 0
+	@jl p_value (#strings_offset) ?~rfalse;
+	@jl p_value (#code_offset) ?~rtrue;
+	rfalse;
+];
+
+[ _IsARoutine_Case2 p_value;
+	! Decide if a value is a routine address, faster than using ofclass
+	! For the ideas behind this implementation, see comments in RunRoutines
+	! Case 2, code_offset > 0 && strings_offset < 0
+	@jl p_value (#code_offset) ?~rtrue;
+	@jl p_value (#strings_offset) ?rtrue;
+	rfalse;
+];
+
+[ _IsAString_Case1 p_value;
+	! Decide if a value is a string address, faster than using ofclass
+	! For the ideas behind this implementation, see comments in RunRoutines
+	! Case 1, code_offset > 0 && strings_offset > 0
+	@jl p_value (#strings_offset) ?~rtrue;
+	@jl p_value (-1) ?rtrue;
+	rfalse;
+];
+
+[ _IsAString_Case2 p_value;
+	! Decide if a value is a string address, faster than using ofclass
+	! For the ideas behind this implementation, see comments in RunRoutines
+	! Case 2, code_offset > 0 && strings_offset < 0
+	@jl p_value (#strings_offset) ?rfalse;
+	@jl p_value (-1) ?rtrue;
+	rfalse;
+];
+
+[ RunRoutines p_obj p_prop p_switch _sw__var _self _address 
+		_len _i _value _result;
 #Ifndef OPTIONAL_NO_DARKNESS;
 	if(p_obj == thedark && p_prop ~= initial or short_name or description) p_obj = real_location;
 #Endif;
-	if(p_switch == 0) sw__var = action; else sw__var = p_switch;
-	if (p_prop >= INDIV_PROP_START && p_obj.&p_prop == 0) rfalse;
-#Ifdef OPTIONAL_MANUAL_SCOPE;
-	return p_obj.p_prop();
+	_address = p_obj.&p_prop;
+	if (p_prop < INDIV_PROP_START || _address ~= 0) {
+		_sw__var = sw__var;
+		if(p_switch == 0) sw__var = action; else sw__var = p_switch;
+		_self = self; self = p_obj;
+!		p_switch = p_obj.p_prop();
+		if(_address == 0) { _value = p_obj.p_prop; jump _process_value; }
+		_len = p_obj.#p_prop;
+#Iftrue #version_number > 4;
+		@log_shift _len (-1) -> _len; ! Divide by 2
 #Ifnot;
-	p_switch = p_obj.p_prop(); ! Repurposing p_switch
-	scope_modified = true;
-	return p_switch;
+		_len = _len / 2;
 #Endif;
+		@dec _len;
+._get_next_value;
+		_value = _address-->_i;
+._process_value;
+		@je _value 0 (-1) ?_isZero;
+		! Rather than using obj.prop(), which calls ofclass,
+		! which calls Z__Region, which calls UnsignedCompare,
+		! to decide what kind of value(s) are in the property,
+		! we have specialized code here, to reach the same
+		! conclusions, much cheaper.
+		if(_puny_zregion_case == _PunyZRegionCase1) {
+			! Case 1, code_offset > 0 && strings_offset > 0
+			! This is first, because it's the most common case
+			! for PunyInform games, and placing it first gives
+			! them a ~4% advantage in speed.
+!			if(value >= #strings_offset) return stringtype;
+			@jl _value (#strings_offset) ?~_isString;
+!			if(value >= #code_offset) return routinetype;
+			@jl _value (#code_offset) ?~_isRoutine;
+			@jl _value (-1) ?_isString;
+			jump _isConstant;
+		} 
+!		else if(_puny_zregion_case == _PunyZRegionCase2) {
+			! Case 2, code_offset > 0 && strings_offset < 0
+!			if(value >= #code_offset) return routinetype;
+			@jl _value (#code_offset) ?~_isRoutine;
+!			if(value < #strings_offset) return routinetype;
+			@jl _value (#strings_offset) ?_isRoutine;
+!			if(value < -1) return stringtype;
+			@jl _value (-1) ?_isString;
+			jump _isConstant;
+!		}
+!		! Case 3, code_offset < 0 && strings_offset < 0
+!		! Should never happen. If it happens, it's very rare
+!!		if(value >= (#strings_offset)) jump ret_string_or_const;
+!		@jl _value (#strings_offset) ?~_isStringOrConst;
+!!		if(value >= (#code_offset)) return routinetype;
+!		@jl _value (#code_offset) ?~_isRoutine;
+!		jump _isConstant;
+!._isStringOrConst;
+!!		if(value < -1) return stringtype;
+!		@jl _value (-1) ?_isString;
+!		jump _isConstant;
+
+._isRoutine;
+			@call _value -> _result;
+			@jz _result ?_next;
+			jump _done;
+._isString;
+			print (string) _value, "^";
+			_result = true;
+			jump _done;
+._isZero;
+			_value = 0;
+._isConstant;
+			_result = _value;
+			jump _done;
+._next;
+		@inc_chk _i _len ?~_get_next_value;
+._done;
+#Ifndef OPTIONAL_MANUAL_SCOPE;
+		if(p_obj.#p_prop > 2 || p_obj.p_prop ~= NULL or 0)
+			scope_modified = true;
+#Endif;
+		self = _self;
+		sw__var = _sw__var;
+	}
+	return _result;
 ];
 
 [ PrintOrRun p_obj p_prop p_no_string_newline _val;
-	_val = p_obj.p_prop;
-	if (p_obj.#p_prop > WORDSIZE || _val ofclass Routine) return RunRoutines(p_obj, p_prop);
-	if(_val ofclass String) {
-		print (string) p_obj.p_prop;
+	if (p_obj.#p_prop > WORDSIZE || IsARoutine((_val = p_obj.p_prop)))
+		return RunRoutines(p_obj, p_prop);
+	if(IsAString(_val)) {
+		print (string) _val;
 		if(p_no_string_newline == 0) new_line;
+		rtrue;
 	}
+	return _val;
 ];
 
-[ MoveFloatingObjects _i _j _len _obj _present;
-	while((_obj = floating_objects-->_i) ~= 0) {
-		_len = _obj.#found_in;
+[ CommonAncestor p_o1 p_o2 _i _j;
+	! Find the nearest object indirectly containing o1 and o2,
+	! or return 0 if there is no common ancestor.
+	_i = p_o1;
+	while (_i) {
+		_j = p_o2;
+		while (_j) {
+			if (_j == _i) return _i;
+			_j = parent(_j);
+		}
+		_i = parent(_i);
+	}
+	return 0;
+];
+
+[ IndirectlyContains p_o1 p_o2;
+	! Does o1 indirectly contain o2?  (Same as testing if o1 is one of the ancestors of o2.)
+	@jz p_o2 ?rfalse;
+._recheck;
+	@je p_o1 p_o2 ?rtrue;
+!	if (p_o1 == p_o2) rtrue;
+	p_o2 = parent(p_o2);
+	@jz p_o2 ?~_recheck;
+	rfalse;
+];
+
+[ MoveFloatingObjects _i _j _o _len _obj;
+	_i--;
+!	while((_obj = floating_objects-->_i) ~= 0) {
+._next_floating;
+		_i++;
+		_obj = floating_objects-->_i;
+		if(_obj == 0)
+			jump _done_floating;
+		if(parent(_obj) ~= 0 && IndirectlyContains(player, _obj))
+			jump _next_floating;
 		if(_obj has absent)
-			_present = 0;
-		else if(_len == 2 && UnsignedCompare(_obj.found_in, top_object) > 0) {
-			_present = RunRoutines(_obj, found_in);
+			jump _isnt_present;
+		_len = _obj.#found_in;
+		if(_len == 2 && UnsignedCompare(_obj.found_in, top_object) > 0) {
+			if(RunRoutines(_obj, found_in))
+				jump _is_present;
+			jump _isnt_present;
 		} else {
-			_present = 0;
 			_j = _obj.&found_in;
-#IfV5;
-			@log_shift _len (-1) -> _len;
-			@scan_table real_location _j _len -> _present ?~_location_wasnt_found; ! The position is only a throw-away value here.
-			_present = 1;
-._location_wasnt_found;
-#IfNot;
+#Iftrue #version_number > 4;
+			@log_shift _len (-1) -> _len; ! Divide by 2
+#Ifnot;
 			_len = _len / 2;
+#Endif;
 			_len = _len - 1;
 ._check_next_value;
-				if(_j-->_len == real_location) {
-					_present = 1;
-					jump _did_find_location;
-				}
+				_o = _j-->_len;
+				if(_o in Class) {
+					if(location ofclass _o)
+						jump _is_present;
+				} else if(_o == location || _o in location)
+					jump _is_present;
 			@dec_chk _len 0 ?~_check_next_value;
-._did_find_location;
-#EndIf;
-
-		}
-		if(_present)
-			move _obj to real_location;
-		else
+._isnt_present;
 			remove _obj;
-		_i++;
-	}
+			jump _next_floating;
+._is_present;
+			if(_obj notin location)
+				move _obj to location;
+		}
+		jump _next_floating;
+!._continue_loop;
+!		_i++;
+!	}
+._done_floating;
 	! It's not certain that scope has been modified, but PlayerTo relies on it
 	! being set.
 	scope_modified = true;
-!	print "MFO done!^";
 ];
 
 [ CalculateVisibilityCeiling;
@@ -918,7 +1218,7 @@ Constant ONE_SPACE_STRING = " ";
 	location = real_location;
 	MoveFloatingObjects(); ! Also sets scope_modified = true;
 #Ifndef OPTIONAL_NO_DARKNESS;
-	_UpdateDarkness();
+	_UpdateDarkness(true);
 #Endif;
 ._recheck_visibility_ceil;
 	_vc = CalculateVisibilityCeiling();
@@ -930,26 +1230,30 @@ Constant ONE_SPACE_STRING = " ";
 			if(parent(player) ~= _old_parent)
 				jump _recheck_visibility_ceil;
 		}
+#Ifdef NewRoom;
 #Ifdef OPTIONAL_NO_DARKNESS;
 		RunEntryPointRoutine(NewRoom);
 #Ifnot;
 		if(location ~= thedark)
 			RunEntryPointRoutine(NewRoom);
 #Endif;
+#Endif;
 	}
 
 #Ifndef OPTIONAL_NO_DARKNESS;
+#Ifdef DarkToDark;
 	if(_old_real_loc ~= real_location && location == thedark && _old_loc == thedark) {
 		! we have moved between dark rooms
 		! give entry point a chance to react
 		RunEntryPointRoutine(DarkToDark);
 	}
 #Endif;
+#Endif;
 	_old_lookmode = lookmode;
 	if(p_flag==false)
 		lookmode = 2;
-	if(p_flag==false or 2 && deadflag == GS_PLAYING)
-		<Look>;
+	if(p_flag~=true && deadflag == GS_PLAYING)
+		Look();
 	lookmode = _old_lookmode;
 ];
 
@@ -963,26 +1267,39 @@ Constant ONE_SPACE_STRING = " ";
 ];
 
 #Ifndef OPTIONAL_NO_DARKNESS;
-[ _UpdateDarkness p_look _ceil _old_darkness _darkness;
+[ _UpdateDarkness p_silent _ceil _old_darkness _darkness;
 	if(location == thedark) _old_darkness = true;
 	_ceil = ScopeCeiling(player);
-	if(_LookForLightInObj(_ceil, _ceil) == false) _darkness = true;
+	if(_ceil hasnt light) {
+		if((last_light_source == 0 || last_light_source hasnt light ||
+					parent(last_light_source) ~= player or _ceil) &&
+				_LookForLightInObj(_ceil) == false) {
+			_darkness = true;
+			last_light_source = 0;
+		}
+	}
 	if(_darkness ~= _old_darkness) scope_modified = true;
 	if(_darkness) {
+		if(_old_darkness == false && p_silent == false) PrintMsg(MSG_NOW_DARK);
 		location = thedark;
 	} else {
 		location = real_location;
-		if(_old_darkness == true && p_look == true)
+		if(_old_darkness && p_silent == false) {
+			new_line;
 			<Look>;
+		}
 	}
 ];
 
-[ _LookForLightInObj p_obj p_ceiling _o;
-	if(p_obj has light) rtrue;
-	if(p_obj == p_ceiling || p_obj has transparent || p_obj has supporter || (p_obj has container && p_obj has open))
-		objectloop(_o in p_obj)
-			if(_LookForLightInObj(_o))
-				rtrue;
+[ _LookForLightInObj p_obj _o;
+!	if(p_obj has light) rtrue;
+	@test_attr p_obj light ?rtrue;
+	objectloop(_o in p_obj) {
+		if(_o has light) { last_light_source = _o; rtrue; }
+		if(_o has transparent or supporter || 
+				(_o has container && _o has open))
+			if(_LookForLightInObj(_o)) rtrue;
+	}
 	rfalse;
 ];
 #Endif;
@@ -991,21 +1308,30 @@ Constant ONE_SPACE_STRING = " ";
 Include "scope.h";
 Include "parser.h";
 
-[ ActionPrimitive; indirect(#actions_table-->action); ];
+[ ActionPrimitive; return indirect(#actions_table-->action); ];
 
-[ PerformPreparedAction _ret_val;
+[ PerformPreparedAction _ret_val _action_returned;
 #IfDef DEBUG;
 	if(debug_flag & 2) TraceAction();
 #EndIf;
+	if(input_action == -2) {
+		input_action = action;
+		input_noun = noun;
+		input_second = second;
+		input_direction = selected_direction;
+	}
 	if ((meta || (BeforeRoutines() == false)) && action < 4096) {
 		@push run_after_routines_msg; @push run_after_routines_arg_1;
 		run_after_routines_msg = 0;
-		ActionPrimitive();
+		_action_returned = ActionPrimitive();
+		if(_action_returned ~= 0 or 1) {
+			PrintMsg(_action_returned);
+		}
 		! If the action has set run_after_routines_msg = true, after routines
 		! should be run. If it has set it to another value, this message should
 		! be printed unless after routines returns true.
 		if(run_after_routines_msg && AfterRoutines() == false &&
-				run_after_routines_msg ~= 0 or 1 &&
+				run_after_routines_msg ~= 1 &&
 				keep_silent == false)
 			PrintMsg(run_after_routines_msg, run_after_routines_arg_1);
 		@pull run_after_routines_arg_1; @pull run_after_routines_msg;
@@ -1038,8 +1364,8 @@ Include "parser.h";
 	! * false if no routines were found
 	! * true if routines were found, p_break was true, and a routine didn't return false
 	! * Otherwise:
-	!    * if OPTIONAL_MANUAL_SCOPE_BOOST is defined, return 2
-	!    * if not, return false
+	!	* if OPTIONAL_MANUAL_SCOPE_BOOST is defined, return 2
+	!	* if not, return false
 
 	if(scope_copy_objects == 0) rfalse;
 	_max = scope_copy_objects - 1;
@@ -1048,12 +1374,12 @@ Include "parser.h";
 	if (_obj has reactive && _obj.&p_property ~= 0 && ( _obj.#p_property > 2 || _obj.p_property ~= NULL or 0)) {
 #Ifdef OPTIONAL_MANUAL_SCOPE_BOOST;
 		_any = 2;
-#EndIf;
+#Endif;
 #IfDef DEBUG;
-#IfV3;
-		if(debug_flag & 1) print "(", (name) _obj, ").",(property) p_property,"()^";
-#EndIf;
-#EndIf;
+#Iftrue #version_number < 5;
+		if(debug_flag & 1) print "[ ~", (name) _obj, "~.",(property) p_property,"() ]^";
+#Endif;
+#Endif;
 		if(RunRoutines(_obj, p_property) && p_break) {
 			rtrue;
 		}
@@ -1065,14 +1391,14 @@ Include "parser.h";
 [ RunEachTurn;
 	! Run all each_turn routines for location and all objects in scope.
 
-	GetScopeCopy(); ! later used by _RunReact
+	GetScopeCopy(player, EACH_TURN_REASON); ! later used by _RunReact
 
 	if(location has reactive && location.&each_turn ~= 0) {
-#IfDef DEBUG;
-#IfV3;
-		if(debug_flag & 1) print "(", (name) location, ").each_turn()^";
-#EndIf;
-#EndIf;
+#Ifdef DEBUG;
+#Iftrue #version_number < 5;
+		if(debug_flag & 1) print "[ ~", (name) location, "~.each_turn() ]^";
+#Endif;
+#Endif;
 		RunRoutines(location, each_turn);
 	}
 
@@ -1093,23 +1419,22 @@ Include "parser.h";
 ];
 
 [ BeforeRoutines;
+	if(real_location == 0) rfalse;
 
-	GetScopeCopy(); ! later used by _RunReact
+	GetScopeCopy(player, REACT_BEFORE_REASON); ! later used by _RunReact
 
 #IfDef GamePreRoutine;
 #IfDef DEBUG;
-#IfV3;
-	if(debug_flag & 1) print "GamePreRoutine()^";
-#EndIf;
+	if(debug_flag & 1) print "[ GamePreRoutine() ]^";
 #EndIf;
 	if(RunEntryPointRoutine(GamePreRoutine)) rtrue;
 #EndIf;
 
-#IfDef DEBUG;
-#IfV3;
-	if(debug_flag & 1) print "player.orders()^";
-#EndIf;
-#EndIf;
+#Ifdef DEBUG;
+#Iftrue #version_number < 5;
+	if(debug_flag & 1) print "[ player.orders() ]^";
+#Endif;
+#Endif;
 	if(RunRoutines(player, orders)) rtrue;
 
 #Ifdef OPTIONAL_MANUAL_SCOPE_BOOST;
@@ -1129,20 +1454,20 @@ Include "parser.h";
 	if(_RunReact(react_before, true) == true) rtrue;
 #Endif;
 
-#IfDef DEBUG;
-#IfV3;
-	if(debug_flag & 1) print "(", (name) real_location, ").before()^";
-#EndIf;
-#EndIf;
+#Ifdef DEBUG;
+#Iftrue #version_number < 5;
+	if(debug_flag & 1) print "[ ~", (name) real_location, "~.before() ]^";
+#Endif;
+#Endif;	
 	if(real_location.&before) {
 		if(RunRoutines(real_location, before)) rtrue;
 	}
 	if(inp1 > 1) {
-#IfDef DEBUG;
-#IfV3;
-		if(debug_flag & 1) print "(", (name) inp1, ").before()^";
-#EndIf;
-#EndIf;
+#Ifdef DEBUG;
+#Iftrue #version_number < 5;
+		if(debug_flag & 1) print "[ ~", (name) inp1, "~.before() ]^";
+#Endif;
+#Endif;
 		if(inp1.&before) {
 			if(RunRoutines(inp1, before)) rtrue;
 		}
@@ -1153,8 +1478,9 @@ Include "parser.h";
 [ AfterRoutines;
 	! react_after - Loops over the scope to find possible react_before routines
 	! to run in each object, if it's found stop the action by returning true
+	if(real_location == 0) rfalse;
 
-	GetScopeCopy(); ! later used by _RunReact
+	GetScopeCopy(player, REACT_AFTER_REASON); ! later used by _RunReact
 
 #Ifdef OPTIONAL_MANUAL_SCOPE_BOOST;
 
@@ -1173,29 +1499,27 @@ Include "parser.h";
 	if(_RunReact(react_after, true) == true) rtrue;
 #Endif;
 
-#IfDef DEBUG;
-#IfV3;
-	if(debug_flag & 1) print "(", (name) real_location, ").after()^";
-#EndIf;
-#EndIf;
+#Ifdef DEBUG;
+#Iftrue #version_number < 5;
+	if(debug_flag & 1) print "[ ~", (name) real_location, "~.after() ]^";
+#Endif;
+#Endif;
 	if(real_location.&after) {
 		if(RunRoutines(real_location, after)) rtrue;
 	}
 	if(inp1 > 1) {
-#IfDef DEBUG;
-#IfV3;
-		if(debug_flag & 1) print "(", (name) inp1, ").after()^";
-#EndIf;
-#EndIf;
+#Ifdef DEBUG;
+#Iftrue #version_number < 5;
+		if(debug_flag & 1) print "[ ~", (name) inp1, "~.after() ]^";
+#Endif;
+#Endif;
 		if(inp1.&after) {
 			if(RunRoutines(inp1, after)) rtrue;
 		}
 	}
 #IfDef GamePostRoutine;
 #IfDef DEBUG;
-#IfV3;
-	if(debug_flag & 1) print "GamePostRoutine()^";
-#EndIf;
+	if(debug_flag & 1) print "[ GamePostRoutine() ]^";
 #EndIf;
 	if(RunEntryPointRoutine(GamePostRoutine)) rtrue;
 #EndIf;
@@ -1203,12 +1527,12 @@ Include "parser.h";
 ];
 
 [ RunLife p_actor p_reason;
-#IfDef DEBUG;
-#IfV3;
-	if(debug_flag & 1 && p_actor provides life) print "(", (name) p_actor, ").life()^";
-#EndIf;
-#EndIf;
-    return RunRoutines(p_actor, life, p_reason);
+#Ifdef DEBUG;
+#Iftrue #version_number < 5;
+	if(debug_flag & 1 && p_actor provides life) print "[ ~", (name) p_actor, "~.life() ]^";
+#Endif;
+#Endif;
+	return RunRoutines(p_actor, life, p_reason);
 ];
 
 [ _SetDirectionIfIsFakeDir p_obj p_noun_no _idx;
@@ -1233,24 +1557,24 @@ Include "parser.h";
 ];
 
 [ DebugParameter p_w;
-    print p_w;
-    if (p_w >= 1 && p_w <= top_object) print " (", (name) p_w, ")";
-    if (UnsignedCompare(p_w, dict_start) >= 0 &&
-            UnsignedCompare(p_w, dict_end) < 0 &&
-            (p_w - dict_start) % dict_entry_size == 0)
-        print " ('", (address) p_w, "')";
+	print p_w;
+	if (p_w >= 1 && p_w <= top_object) print " (", (name) p_w, ")";
+	if (UnsignedCompare(p_w, dict_start) >= 0 &&
+			UnsignedCompare(p_w, dict_end) < 0 &&
+			(p_w - dict_start) % dict_entry_size == 0)
+		print " ('", (address) p_w, "')";
 ];
 
 [ DebugAction p_a _anames;
-    if (p_a >= 4096) { print "<fake action ", p_a-4096, ">"; return; }
-    _anames = #identifiers_table;
-    _anames = _anames + 2*(_anames-->0) + 2*48;
-    print (string) _anames-->p_a;
+	if (p_a >= 4096) { print "<fake action ", p_a-4096, ">"; return; }
+	_anames = #identifiers_table;
+	_anames = _anames + 2*(_anames-->0) + 2*48;
+	print (string) _anames-->p_a;
 ];
 
 [ TraceAction;
 	print "[ Action ", (DebugAction) action;
-    if (noun ~= 0) {
+	if (noun ~= 0) {
 		print " with noun ";
 		if(inp1 == 1) print noun;
 		else print (DebugParameter) noun;
@@ -1260,7 +1584,7 @@ Include "parser.h";
 			else print (DebugParameter) second;
 		}
 	}
-    print "]^";
+	print "]^";
 ];
 
 #EndIf;
@@ -1306,8 +1630,12 @@ Include "parser.h";
 #EndIf;
 	if(p_array_val == 0)
 		p_array_val = WORD_HIGHBIT + p_obj;
+#Iftrue #version_number > 3;
+	@scan_table p_array_val the_timers active_timers -> _i ?rfalse;
+#Ifnot;
 	for (_i=0 : _i<active_timers : _i++)
 		if (the_timers-->_i == p_array_val) rfalse;
+#Endif;
 	if (active_timers >= MAX_TIMERS) {
 #IfTrue RUNTIME_ERRORS > RTE_MINIMUM;
 		_RunTimeError(ERR_TOO_MANY_TIMERS_DAEMONS);
@@ -1317,7 +1645,7 @@ Include "parser.h";
 	if (p_array_val > 0) {
 #IfTrue RUNTIME_ERRORS > RTE_MINIMUM;
 		if (p_obj.&time_left == 0) {
-			_RunTimeError(ERR_OBJECT_HASNT_PROPERTY, p_obj); 
+			_RunTimeError(ERR_OBJECT_HASNT_PROPERTY, p_obj);
 			return;
 		}
 #EndIf;
@@ -1365,9 +1693,19 @@ Include "parser.h";
 [ StopDaemon p_obj p_array_val _i;
 	if(p_array_val == 0)
 		p_array_val = WORD_HIGHBIT + p_obj;
+#Iftrue #version_number > 3;
+	@scan_table p_array_val the_timers active_timers -> _i ?~rfalse;
+	_i = _i - the_timers;
+#Iftrue #version_number > 4;
+	@log_shift _i (-1) -> _i; ! Divide by 2
+#Ifnot;
+	@div _i 2 -> _i;
+#Endif;
+#Ifnot;
 	for (_i=0 : _i<active_timers : _i++)
 		if (the_timers-->_i == p_array_val) jump _FoundTSlot4;
 	rfalse;
+#Endif;
 ._FoundTSlot4;
 #IfDef DEBUG;
 	if(debug_flag & 4) {
@@ -1382,7 +1720,7 @@ Include "parser.h";
 	if (p_array_val > 0) { ! This is a timer, not a daemon
 #IfTrue RUNTIME_ERRORS > RTE_MINIMUM;
 		if (p_obj.&time_left == 0) {
-			_RunTimeError(ERR_OBJECT_HASNT_PROPERTY, p_obj); 
+			_RunTimeError(ERR_OBJECT_HASNT_PROPERTY, p_obj);
 			return;
 		}
 #EndIf;
@@ -1447,13 +1785,13 @@ Include "parser.h";
 
 [ WV__Pr obj identifier value x;
  x = obj..&identifier;
- if (x==0) { 
-	!RT__Err(\"write to\", obj, identifier); 
-	return; 
+ if (x==0) {
+	!RT__Err(\"write to\", obj, identifier);
+	return;
  }
  !#ifdef INFIX;
  !if (obj has infix__watching || (debug_flag & 15)) RT__TrPS(obj,identifier,value);
- !#ifnot; 
+ !#ifnot;
  !#ifdef DEBUG;
  !if (debug_flag & 15) RT__TrPS(obj,identifier,value);
  !#endif; #endif;
@@ -1465,12 +1803,12 @@ Include "parser.h";
 
 [ RV__Pr obj identifier x;
  x = obj..&identifier;
- if (x==0) {   
+ if (x==0) {
 	!if (identifier >= 1 && identifier < 64 && obj.#identifier <= 2)
 		 @get_prop obj identifier -> sp;
 		 @ret_popped;
 		 !return obj.identifier;
-	 !RT__Err(\"read\", obj, identifier); return; 
+	 !RT__Err(\"read\", obj, identifier); return;
  }
  #IFV3;
  !if (obj..#identifier > 2) RT__Err(\"read\", obj, identifier);
@@ -1480,7 +1818,7 @@ Include "parser.h";
  return x-->0;
 ];
 
-#IfV5;
+#Iftrue #version_number > 4;
 
 !   CA__Pr:  call, that is, print-or-run-or-read, a property:
 !			 this exactly implements obj..prop(...).  Note that
@@ -1492,28 +1830,28 @@ Include "parser.h";
 [ CA__Pr obj id a b c d e f x y z s s2 n m;
  if (obj < 1 || obj > #largest_object-255)
  {   switch(Z__Region(obj))
-	 { 2: if (id == call) { 
-			s = sender; 
-		    sender = self; 
+	 { 2: if (id == call) {
+			s = sender;
+			sender = self;
 			self = obj;
 			#ifdef action;
 			sw__var=action;
 			#endif;
 			x = indirect(obj, a, b, c, d, e, f);
-			self = sender; 
-			sender = s; 
-			return x; 
+			self = sender;
+			sender = s;
+			return x;
 		  }
 		  jump Call__Error;
-	   3: if (id == print) { 
-			@print_paddr obj; 
-			rtrue; 
+	   3: if (id == print) {
+			@print_paddr obj;
+			rtrue;
 		  }
-		  if (id == print_to_array) { 
-			@output_stream 3 a; 
-			@print_paddr obj; 
+		  if (id == print_to_array) {
+			@output_stream 3 a;
+			@print_paddr obj;
 			@output_stream -3;
-			return a-->0; 
+			return a-->0;
 		  }
 		  jump Call__Error;
 	 }
@@ -1527,64 +1865,64 @@ Include "parser.h";
  !if (n==1) {
 	!#ifdef DEBUG;n=debug_flag & 1; debug_flag=debug_flag-n;#endif;
 	!print \"[ ~\", (name) obj, \"~.\", (property) id, \"(\";
-	!switch(y) 
-	!{ 1: print a; 
-	  !2: print a,\",\",b; 
+	!switch(y)
+	!{ 1: print a;
+	  !2: print a,\",\",b;
 	  !3: print a,\",\",b,\",\",c;
 	  !4: print a,\",\",b,\",\",c,\",\",d;
 	  !5: print a,\",\",b,\",\",c,\",\",d,\",\",e;
-	  !6: print a,\",\",b,\",\",c,\",\",d,\",\",e,\",\",f; 
+	  !6: print a,\",\",b,\",\",c,\",\",d,\",\",e,\",\",f;
 	!}
 	!print \") ]^\";
    !#ifdef DEBUG;debug_flag = debug_flag + n;#endif;
  !}
- if (id > 0 && id < 64) { 
-	!x = obj.&id; 
+ if (id > 0 && id < 64) {
+	!x = obj.&id;
 	@get_prop_addr obj id -> x;
-	if (x==0) { 
-		x=$000a-->0 + 2*(id-1); 
-		n=2; 
-	} else 
+	if (x==0) {
+		x=$000a-->0 + 2*(id-1);
+		n=2;
+	} else
 		!n = obj.#id;
 		@get_prop_len x -> n;
- } else { 
+ } else {
 	if (id>=64 && id<69 && obj in Class)
 		return Cl__Ms(obj,id,y,a,b,c,d);
 	x = obj..&id;
-	if (x == 0) { 
+	if (x == 0) {
 		.Call__Error;
-		!RT__Err(\"send message\", obj, id); 
-		return; 
+		!RT__Err(\"send message\", obj, id);
+		return;
 	}
 	n = 0->(x-1);
 	if (id&$C000==$4000)
-		switch (n&$C0) 
-			{   0: n=1; 
-			  $40: n=2; 
-			  $80: n=n&$3F; 
+		switch (n&$C0)
+			{   0: n=1;
+			  $40: n=2;
+			  $80: n=n&$3F;
 			}
  }
  for (:2*m<n:m++)
  {  if (x-->m==$ffff) rfalse;
 	switch(Z__Region(x-->m))
-	{ 2: s = sender; 
-		 sender = self; 
-		 self = obj; 
+	{ 2: s = sender;
+		 sender = self;
+		 self = obj;
 		 s2 = sw__var;
-	     #ifdef LibSerial;
-	     if (id==life) sw__var=reason_code; else sw__var=action;
-	     #endif;
-		 switch(y) 
-			{ 0: z = indirect(x-->m); 
+		 #ifdef LibSerial;
+		 if (id==life) sw__var=reason_code; else sw__var=action;
+		 #endif;
+		 switch(y)
+			{ 0: z = indirect(x-->m);
 			  1: z = indirect(x-->m, a);
-			  2: z = indirect(x-->m, a, b); 
+			  2: z = indirect(x-->m, a, b);
 			  3: z = indirect(x-->m, a, b, c);
-			  4: z = indirect(x-->m, a, b, c, d); 
+			  4: z = indirect(x-->m, a, b, c, d);
 			  5: z = indirect(x-->m, a, b, c, d, e);
-			  6: z = indirect(x-->m, a, b, c, d, e, f); 
+			  6: z = indirect(x-->m, a, b, c, d, e, f);
 			}
-		 self = sender; 
-		 sender = s; 
+		 self = sender;
+		 sender = s;
 		 sw__var = s2;
 		 if (z ~= 0) return z;
 	  3: print_ret (string) x-->m;
@@ -1597,65 +1935,65 @@ Include "parser.h";
 [ Cl__Ms obj id y a b c d x;
  switch(id)
  {   create:
-		 if (children(obj)<=1) rfalse; 
+		 if (children(obj)<=1) rfalse;
 		 x=child(obj);
-		 remove x; 
-		 if (x provides create) { 
+		 remove x;
+		 if (x provides create) {
 			if (y==0) x.create();
-			if (y==1) x.create(a); 
+			if (y==1) x.create(a);
 			if (y==2) x.create(a,b);
-			!if (y>3) RT__Err(1,obj); 
+			!if (y>3) RT__Err(1,obj);
 			if (y>=3) x.create(a,b,c);
 		 }
 		 return x;
 	 recreate:
-		 if (~~(a ofclass obj)) { 
-			!RT__Err(\"recreate\", a, -obj); 
+		 if (~~(a ofclass obj)) {
+			!RT__Err(\"recreate\", a, -obj);
 			rfalse;
  		 }
 		 Copy__Primitive(a, child(obj));
-		 if (a provides create) { 
+		 if (a provides create) {
 			if (y==1) a.create();
-			if (y==2) a.create(b); 
+			if (y==2) a.create(b);
 			if (y==3) a.create(b,c);
-			!if (y>4) RT__Err(1,obj); 
+			!if (y>4) RT__Err(1,obj);
 			if (y>=4) a.create(b,c,d);
-		 } 
+		 }
 		 rfalse;
 	 destroy:
-		 if (~~(a ofclass obj)) { 
-			!RT__Err(\"destroy\", a, -obj); 
-			rfalse; 
+		 if (~~(a ofclass obj)) {
+			!RT__Err(\"destroy\", a, -obj);
+			rfalse;
 		 }
 		 if (a provides destroy) a.destroy();
 		 Copy__Primitive(a, child(obj));
-		 move a to obj; 
+		 move a to obj;
 		 rfalse;
 	 remaining:
 		 return children(obj)-1;
 	 copy:
-		 if (~~(a ofclass obj)) { 
-			!RT__Err(\"copy\", a, -obj); 
+		 if (~~(a ofclass obj)) {
+			!RT__Err(\"copy\", a, -obj);
 			rfalse;
 		 }
-		 if (~~(b ofclass obj)) { 
-			!RT__Err(\"copy\", b, -obj); 
-			rfalse; 
+		 if (~~(b ofclass obj)) {
+			!RT__Err(\"copy\", b, -obj);
+			rfalse;
 		 }
-		 Copy__Primitive(a, b); 
+		 Copy__Primitive(a, b);
 		 rfalse;
  }
 ];
 
-#Endif; ! IfV5
+#Endif; ! #Iftrue #version_number > 4;
 
 !   IB__Pr:  ++(individual property)
 
 [ IB__Pr obj identifier x;
  x = obj..&identifier;
- if (x==0) { 
-	!RT__Err(\"increment\", obj, identifier); 
-	return; 
+ if (x==0) {
+	!RT__Err(\"increment\", obj, identifier);
+	return;
  }
  !#ifdef INFIX;
  !if (obj has infix__watching || (debug_flag & 15)) RT__TrPS(obj,identifier,(x-->0)+1);
@@ -1669,9 +2007,9 @@ Include "parser.h";
 
 [ IA__Pr obj identifier x;
  x = obj..&identifier;
- if (x==0) { 
-	!RT__Err(\"increment\", obj, identifier); 
-	return; 
+ if (x==0) {
+	!RT__Err(\"increment\", obj, identifier);
+	return;
  }
  !#ifdef INFIX;
  !if (obj has infix__watching || (debug_flag & 15))
@@ -1686,9 +2024,9 @@ Include "parser.h";
 
 [ DB__Pr obj identifier x;
  x = obj..&identifier;
- if (x==0) { 
-	!RT__Err(\"decrement\", obj, identifier); 
-	return; 
+ if (x==0) {
+	!RT__Err(\"decrement\", obj, identifier);
+	return;
  }
  !#ifdef INFIX;
  !if (obj has infix__watching || (debug_flag & 15)) RT__TrPS(obj,identifier,(x-->0)-1);
@@ -1702,9 +2040,9 @@ Include "parser.h";
 
 [ DA__Pr obj identifier x;
  x = obj..&identifier;
- if (x==0) { 
-	!RT__Err(\"decrement\", obj, identifier); 
-	return; 
+ if (x==0) {
+	!RT__Err(\"decrement\", obj, identifier);
+	return;
  }
  !#ifdef INFIX;
  !if (obj has infix__watching || (debug_flag & 15)) RT__TrPS(obj,identifier,(x-->0)-1);
@@ -1754,7 +2092,7 @@ Include "parser.h";
 	 otherid = identifier | $8000;
  i = obj.3;
  while (i-->0 ~= 0)
- {    if (i-->0 == identifier or otherid)
+ {	if (i-->0 == identifier or otherid)
 		return i+3;
 	 i = i + i->2 + 3;
  }
@@ -1775,9 +2113,9 @@ Include "parser.h";
  if (x==0) rfalse;
  if (identifier&$C000==$4000)
 	 switch (((x-1)->0)&$C0)
-	 {    0: return 1;  
-		$40: return 2;  
-		$80: return ((x-1)->0)&$3F; 
+	 {	0: return 1;
+		$40: return 2;
+		$80: return ((x-1)->0)&$3F;
 	 }
  return (x-1)->0;
 ];
@@ -1787,9 +2125,9 @@ Include "parser.h";
 
 [ RA__Sc cla identifier otherid i j k;
  if (cla notin 1 && cla > 4)
- {   
-	!RT__Err(\"be a '::' superclass\", cla, -1); 
-	rfalse; 
+ {
+	!RT__Err(\"be a '::' superclass\", cla, -1);
+	rfalse;
  }
  if (self ofclass cla) otherid = identifier | $8000;
  for (j=0: #classes_table-->j ~= 0: j++)
@@ -1852,14 +2190,14 @@ Include "parser.h";
  } else if (cla == 3 or 4) {
 	 rfalse;
  }
- if (cla notin 1) { 
+ if (cla notin 1) {
 	!RT__Err(\"apply 'ofclass' for\", cla, -1);
 	rfalse;
  }
  @get_prop_addr obj 2 -> a;
  if (a==0) rfalse;
  @get_prop_len a -> n;
- for (j=0: j<n/2: j++) {   
+ for (j=0: j<n/2: j++) {
 	if (a-->j == cla) rtrue;
  }
  rfalse;
@@ -1871,7 +2209,7 @@ Include "parser.h";
 #Endif;
 
 
-#IfV3;
+#Iftrue #version_number < 5;
 ! These routines are implemented by Veneer, but the default implementations give compile errors for z3
 
 ! [ Print__PName prop p size cla i;
@@ -1905,9 +2243,9 @@ Include "parser.h";
 		! if(_prop_id == 0) break;
 		! if(_prop_id & 32767 == p_property) break;
 		! ! print (hex) x-->0, " (", (property) x-->0, ")  length ", x->2, ": ";
-		! !       for (n = 0: n< (x->2)/2: n++)
-		! !           print (hex) (x+3)-->n, " ";
-		! !       @new_line;
+		! !	   for (n = 0: n< (x->2)/2: n++)
+		! !		   print (hex) (x+3)-->n, " ";
+		! !	   @new_line;
 		! _x = _x + _x->2 + 3;
 	! }
 	! return _x;
@@ -1935,14 +2273,14 @@ Include "parser.h";
 	! rfalse;
 ! ];
 
-!      CA__Pr:  call, that is, print-or-run-or-read, a property:
-!                      this exactly implements obj..prop(...).  Note that
-!                      classes (members of Class) have 5 built-in properties
-!                      inherited from Class: create, recreate, destroy,
-!                      remaining and copy.  Implementing these here prevents
-!                      the need for a full metaclass inheritance scheme.      */
+!	  CA__Pr:  call, that is, print-or-run-or-read, a property:
+!					  this exactly implements obj..prop(...).  Note that
+!					  classes (members of Class) have 5 built-in properties
+!					  inherited from Class: create, recreate, destroy,
+!					  remaining and copy.  Implementing these here prevents
+!					  the need for a full metaclass inheritance scheme.	  */
 
-[ CA__Pr obj id a    x z s s2 n m;
+[ CA__Pr obj id a	x z s s2 n m;
 ! print "CA_Pr obj = ", obj,", id = ", id,", a = ", a, "^";
 	if (obj < 1 || obj > #largest_object-255) {
 		switch(Z__Region(obj)) {
@@ -1971,19 +2309,19 @@ Include "parser.h";
 !   #ifdef INFIX;if (obj has infix__watching) n=1;#endif;
 	#ifdef DEBUG;if (debug_flag & 1 ~= 0) n=1;#endif;
 !   if (n==1) {
-!     n=debug_flag & 1; debug_flag=debug_flag-n;
-!     print "[ ~", (name) obj, "~.", (property) id, "(";
-!     switch(y) {
-!     1:
-!       print a; 2: print a,",",b; 3: print a,",",b,",",c;
-!     4:
-!       print a,",",b,",",c,",",d;
-!     5:
-!       print a,",",b,",",c,",",d,",",e;
-!     6:
-!       print a,",",b,",",c,",",d,",",e,",",f;
-!     }
-!     print ") ]^"; debug_flag = debug_flag + n;
+!	 n=debug_flag & 1; debug_flag=debug_flag-n;
+!	 print "[ ~", (name) obj, "~.", (property) id, "(";
+!	 switch(y) {
+!	 1:
+!	   print a; 2: print a,",",b; 3: print a,",",b,",",c;
+!	 4:
+!	   print a,",",b,",",c,",",d;
+!	 5:
+!	   print a,",",b,",",c,",",d,",",e;
+!	 6:
+!	   print a,",",b,",",c,",",d,",",e,",",f;
+!	 }
+!	 print ") ]^"; debug_flag = debug_flag + n;
 !   }
 	if (id > 0 && id < INDIV_PROP_START) {
 !   print "CA_Pr OK obj = ", obj,", id = ", id,", a = ", a, "^";
@@ -1993,21 +2331,21 @@ Include "parser.h";
 		} else n = obj.#id;
 	} else {
 		if (id>=64 && id<69 && obj in Class) {
-!     print "CA_Pr ERROR0 obj = ", obj,", id = ", id,", a = ", a, "^";
+!	 print "CA_Pr ERROR0 obj = ", obj,", id = ", id,", a = ", a, "^";
 #IfTrue RUNTIME_ERRORS > RTE_MINIMUM;
-			RT__Err("Class create etc", obj, id); 
+			RT__Err("Class create etc", obj, id);
 #Endif;
 			return;
-!     return Cl__Ms(obj,id,y,a,b,c);
+!	 return Cl__Ms(obj,id,y,a,b,c);
 		}
 !   print "CA_Pr(2.1) obj = ", obj,", id = ", id,", n = ", n, "^";
 		x = obj..&id;
 !   print "CA_Pr(2.2) obj = ", obj,", id = ", id,", x = ", x, "^";
 		if (x == 0) {
-!     print "CA_Pr ERROR1 obj = ", obj,", id = ", id,", a = ", a, "^";
+!	 print "CA_Pr ERROR1 obj = ", obj,", id = ", id,", a = ", a, "^";
 			.Call__Error;
 #IfTrue RUNTIME_ERRORS > RTE_MINIMUM;
-			RT__Err("send message", obj, id); 
+			RT__Err("send message", obj, id);
 #Endif;
 			return;
 		}
@@ -2017,34 +2355,38 @@ Include "parser.h";
 		switch (n&$C0) { 0: n=1; $40: n=2; $80: n=n&$3F; }
 	}
 ! print "CA_Pr(3) obj = ", obj,", id = ", id,", a = ", a, "^";
-	for (:2*m<n:m++) {
-!   print "Considering routine at ", x+2*m,": ", x-->m, "^";
-		if (x-->m==$ffff) rfalse;
-		switch(Z__Region(x-->m)) {
+	for (:m+m<n:m++) {
+		z = x-->m;
+!   print "Considering routine at ", x+2*m,": ", z, "^";
+		if (z==$ffff) rfalse;
+		switch(Z__Region(z)) {
 		2:
 			s = sender; sender = self; self = obj; s2 = sw__var;
-!       switch(y) {
-!       0:
-!         z = indirect(x-->m);
-!       1:
-			z = indirect(x-->m, a);
-!       2:
-!         z = indirect(x-->m, a, b);
-!       3:
-!       z = indirect(x-->m, a, b, c);
-!       4:
-!         z = indirect(x-->m, a, b, c, d);
-!       5:
-!         z = indirect(x-->m, a, b, c, d, e);
-!       6:
-!         z = indirect(x-->m, a, b, c, d, e, f);
-!       }
+!	   switch(y) {
+!	   0:
+!		 z = indirect(x-->m);
+!	   1:
+			if(a)
+				z = indirect(z, a);
+			else
+				z = indirect(z);
+!	   2:
+!		 z = indirect(x-->m, a, b);
+!	   3:
+!	   z = indirect(x-->m, a, b, c);
+!	   4:
+!		 z = indirect(x-->m, a, b, c, d);
+!	   5:
+!		 z = indirect(x-->m, a, b, c, d, e);
+!	   6:
+!		 z = indirect(x-->m, a, b, c, d, e, f);
+!	   }
 			self = sender; sender = s; sw__var = s2;
 			if (z ~= 0) return z;
 		3:
-			print_ret (string) x-->m;
+			print_ret (string) z;
 		default:
-			return x-->m;
+			return z;
 		}
 	}
 	rfalse;
@@ -2056,11 +2398,16 @@ Include "parser.h";
 #EndIf;
 
 #Ifndef CUSTOM_PLAYER_OBJECT;
-Object selfobj "du"
+Object selfobj "you"
 	with
-		name 'mich',
-		short_name  "du",
-		description "Gut aussehend wie immer.",
+		name 'me' 'myself' 'self',
+!		short_name  "yourself",
+		short_name  [; 
+			if(caps_mode) { print "You"; rtrue; }
+			print "yourself";
+			rtrue;
+		],
+		description "As good-looking as ever.",
 		before NULL,
 		after NULL,
 		life NULL,
@@ -2076,10 +2423,10 @@ Object selfobj "du"
 #Endif;
 
 #Ifndef OPTIONAL_NO_DARKNESS;
-Object thedark "Dunkelheit"
+Object thedark "Darkness"
 	with
 		initial 0,
-		description "Hier ist es stockdunkel!",
+		description "It is pitch dark here!",
  		short_name 0;
 #Endif;
 
@@ -2128,9 +2475,11 @@ Object thedark "Dunkelheit"
 #Endif;
 	RunTimersAndDaemons(); if(deadflag >= GS_DEAD) rtrue;
 	RunEachTurn(); if(deadflag >= GS_DEAD) rtrue;
+#Ifdef TimePasses;
 	RunEntryPointRoutine(TimePasses);
+#Endif;
 #Ifndef OPTIONAL_NO_DARKNESS;
-	_UpdateDarkness(true);
+	_UpdateDarkness();
 #Endif;
 
 	if(update_moved || child(player) ~= last_player_child or 0) {
@@ -2170,7 +2519,7 @@ Object thedark "Dunkelheit"
 #IfTrue RUNTIME_ERRORS < RTE_VERBOSE;
 [RT__Err err_no par1 par2;
 	print "Inform error: ";
-	if(err_no ofclass String)
+	if(IsAString(err_no))
 		print (string) err_no, " - ";
 	else
 		print_ret err_no;
@@ -2194,21 +2543,28 @@ Object thedark "Dunkelheit"
 	return p_fake_obj - FAKE_N_OBJ + N_TO_CONST;
 ];
 
-[ _InitObjects _i _k _stop;
-	_stop = top_object + 1;
-	for(_i = Directions : _i < _stop : _i++) {
+[ _InitObjects _i _k _v;
+	_i = Directions;
+.objloop;
 #Ifndef OPTIONAL_MANUAL_REACTIVE;
+		@get_next_prop _i 0 -> _v;
+		@jl _v react_before ?back_to_objloop;
+		@get_prop_addr _i react_before -> _v;
+		@jz _v ?~is_reactive;
+		@get_prop_addr _i react_after -> _v;
+		@jz _v ?~is_reactive;
+		@get_prop_addr _i each_turn -> _v;
+		@jz _v ?~is_reactive;
+		@get_prop_addr _i add_to_scope -> _v;
+		@jz _v ?~is_reactive;
 #Ifdef OPTIONAL_REACTIVE_PARSE_NAME;
-		if(_i.&react_before ~= 0 || _i.&react_after ~= 0 || _i.&each_turn ~= 0 ||
-				_i.&add_to_scope ~= 0 || _i.&parse_name ~= 0)
-			give _i reactive;
-#Ifnot;
-		if(_i.&react_before ~= 0 || _i.&react_after ~= 0 || _i.&each_turn ~= 0 ||
-				_i.&add_to_scope ~= 0)
-			give _i reactive;
+		@get_prop_addr _i parse_name -> _v;
+		@jz _v ?~is_reactive;
 #Endif;
 #Endif;
-		if(_i.&found_in) {
+.back_to_objloop;
+		@get_prop_addr _i found_in -> _v;
+		@jz _v ?not_floating;
 #IfTrue RUNTIME_ERRORS > RTE_MINIMUM;
 			if(_k >= MAX_FLOATING_OBJECTS) {
 				_RunTimeError(ERR_TOO_MANY_FLOATING);
@@ -2216,8 +2572,15 @@ Object thedark "Dunkelheit"
 			}
 #EndIf;
 			floating_objects-->(_k++) = _i;
-		}
-	}
+.not_floating;
+	@inc_chk _i top_object ?~objloop;
+	return;
+	
+#Ifndef OPTIONAL_MANUAL_REACTIVE;
+.is_reactive;
+	give _i reactive;
+	jump back_to_objloop;
+#EndIf;
 ];
 
 [ SetTime p_time p_step;
@@ -2232,23 +2595,37 @@ Object thedark "Dunkelheit"
 #Ifnot;
 [ main _i _j _copylength _sentencelength _parsearraylength _score _again_saved _parser_oops _disallow_complex_again;
 #Endif;
-#IfV5;
+#Iftrue #version_number > 3;
 	screen_width = HDR_SCREENWCHARS->0;
-#EndIf;
+#Endif;
 	dict_start = HDR_DICTIONARY-->0;
-	dict_entry_size = dict_start->(dict_start->0 + 1);
-	dict_start = dict_start + dict_start->0 + 4;
+	_i = dict_start->0;
+	dict_entry_size = dict_start->(_i + 1);
+	dict_start = dict_start + _i + 4;
 	dict_end = dict_start + (dict_start - 2)-->0 * dict_entry_size;
+#Ifdef OPTIONAL_EXTENDED_METAVERBS;
+	transcript_mode = (HDR_GAMEFLAGS-->0) & 1;
+#Endif;
 
 	parse->0 = MAX_INPUT_WORDS;
-#IfV5;
-    buffer->0 = MAX_INPUT_CHARS;
-#IfNot;
-    buffer->0 = MAX_INPUT_CHARS - 1;
-#EndIf;
+#Iftrue #version_number > 4;
+	buffer->0 = MAX_INPUT_CHARS;
+#Ifnot;
+	buffer->0 = MAX_INPUT_CHARS - 1;
+#Endif;
 
 	top_object = #largest_object-255;
 	sys_statusline_flag = ( ($1->0) & 2 ) / 2;
+
+! Pick the correct case for custom logic in RunRoutines.
+! 1: #strings_offset > 0 (DEFAULT)
+! 2: #code_offset > 0 && #strings_offset < 0
+! 3: #code_offset < 0 && #strings_offset < 0 (CAN'T HAPPEN)
+	if(#strings_offset < 0) {
+		_puny_zregion_case = _PunyZRegionCase2;
+		IsARoutine = _IsARoutine_Case2;
+		IsAString = _IsAString_Case2;
+	}
 
 #Ifdef CUSTOM_PLAYER_OBJECT;
 	player = CUSTOM_PLAYER_OBJECT;
@@ -2265,14 +2642,15 @@ Object thedark "Dunkelheit"
 	places_score = 0;
 	things_score = 0;
 #EndIf;
-#IfDef TASKS_PROVIDED;
-	for(_i = 0 : _i < NUMBER_TASKS : _i++) task_done->_i = 0;
-#EndIf;
+	! We used to set all elements of task_done to 0 here, but the compiler 
+	! already does that when creating the array.
 #EndIf;
 
-#IfV5;
-	new_line; ! So the first line of text isn't covered by the statusline
+#Iftrue #version_number > 3;
+	DrawStatusLine(true); ! So the first line of text isn't covered by the statusline
 #Endif;
+	_InitObjects(); ! Give reactive attribute as needed + list floating objects
+
 	_j = Initialise();
 
 	objectloop (_i in player) give _i moved ~concealed;
@@ -2283,7 +2661,6 @@ Object thedark "Dunkelheit"
 		@new_line;
 	}
 
-	_InitObjects(); ! after initialise since location set there
 	if(parent(player) == 0) { _i = location; location = 0; PlayerTo(_i); }
 
 	@new_line;
@@ -2292,14 +2669,13 @@ Object thedark "Dunkelheit"
 #Ifdef DEBUG_TIMER;
 	timer1 = 0-->2;
 #Endif;
-#IfV5;
+#Iftrue #version_number > 3;
 		screen_width = HDR_SCREENWCHARS->0;
-#EndIf;
+#Endif;
 
 		_UpdateScoreOrTime();
 		if(_sentencelength > 0) @new_line;
 
-		_UpdateScope(player);
 #Ifndef NO_SCORE;
 		_score = score;
 #Endif;
@@ -2309,6 +2685,19 @@ Object thedark "Dunkelheit"
 #Endif;
 		if(parse->1 == 0) {
 			_ReadPlayerInput();
+#Iftrue #version_number > 4;
+			if(buffer->1 ~= 0 && buffer->2 == 42) { ! asterisk
+#Ifnot;
+			if(buffer->1 == 42) { ! asterisk
+#Endif;
+#ifdef OPTIONAL_EXTENDED_METAVERBS;
+				if(transcript_mode) PrintMsg(MSG_COMMENT_TRANSCRIPT);
+				else PrintMsg(MSG_COMMENT_NO_TRANSCRIPT);
+#Ifnot;
+				PrintMsg(MSG_COMMENT_NO_TRANSCRIPT);
+#Endif;
+				jump _abort_current_input;
+			}
 			_disallow_complex_again = false;
 #Ifdef OPTIONAL_PROVIDE_UNDO_FINAL;
 			if(parse-->1 == 'undo') {
@@ -2340,11 +2729,13 @@ Object thedark "Dunkelheit"
 		timer1 = 0-->2;
 #Endif;
 		if(action == ##OopsCorrection) {
-			if(_again_saved && _parser_oops > 0) {
+			if(_again_saved && _parser_oops ~= 0) {
 				_CopyInputArray(buffer2, buffer);
 				_CopyParseArray(parse2, parse);
 				num_words = parse -> 1;
 				_parser_oops-->0 = special_word;
+				if(special_word == 0)
+					oops_unfixed = true;
 				_again_saved = false;
 				jump _try_same_command_again;
 			} else {
@@ -2355,8 +2746,8 @@ Object thedark "Dunkelheit"
 			! restore from the 'again' buffers and reparse
 			if(_disallow_complex_again) {
 				PrintMsg(MSG_PARSER_COMPLEX_AGAIN);
-		        parse->1 = 0;
-		        continue;
+				parse->1 = 0;
+				continue;
 			} else if(_again_saved) {
 				_CopyInputArray(buffer2, buffer);
 				_CopyParseArray(parse2, parse);
@@ -2384,13 +2775,15 @@ Object thedark "Dunkelheit"
 		}
 		if(action >= 0 && meta == false && _sentencelength>0) {
 			EndTurnSequence();
-        }
-
-        if(deadflag ~= GS_PLAYING && deadflag ~= GS_WIN) {
-        	! we died somehow, use entry routine to give
-        	! a chance of resurrection
-        	RunEntryPointRoutine(AfterLife);
 		}
+
+#Ifdef AfterLife;
+		if(deadflag ~= GS_PLAYING or GS_WIN or GS_QUIT) {
+			! we died somehow, use entry routine to give
+			! a chance of resurrection
+			RunEntryPointRoutine(AfterLife);
+		}
+#Endif;
 
 #Ifndef NO_SCORE;
 		if(_score ~= score && notify_mode == true) {
@@ -2403,10 +2796,18 @@ Object thedark "Dunkelheit"
 			! the first sentence in the input  has been parsed
 			! and executed. Now remove it from parse so that
 			! the next sentence can be parsed
-			_copylength = 2 * _parsearraylength + 1;
-			for(_i = 1, _j = 2 * _sentencelength + 1: _j < _copylength: _i++, _j++)
+#Iftrue #version_number > 4;
+			@log_shift _sentencelength 2 -> _i; ! Multiply by 4
+			_j = parse + 2;
+			_i = _i + _j;
+			_copylength = _sentencelength - _parsearraylength;
+			@log_shift _copylength 2 -> _copylength; ! Multiply by 4
+			@copy_table _i _j _copylength;
+#Ifnot;
+			_copylength = _parsearraylength + _parsearraylength;
+			for(_i = 1, _j = _sentencelength + _sentencelength + 1: _j <= _copylength: _i++, _j++)
 				parse-->_i = parse-->_j;
-
+#Endif;
 			parse->1 = _parsearraylength - _sentencelength;
 			_disallow_complex_again = true; ! cannot parse "x me.g.g.g"
 		} else {
@@ -2426,19 +2827,21 @@ Object thedark "Dunkelheit"
 	_UpdateScoreOrTime();
 	@new_line;
 	if(deadflag == GS_QUIT) @quit;
-#ifV5;
+#Iftrue #version_number > 3;
 	style bold;
 #Endif;
 	print "^  *** ";
 	if(deadflag == GS_WIN) PrintMsg(MSG_YOU_HAVE_WON);
 	else if(deadflag == GS_DEAD) PrintMsg(MSG_YOU_HAVE_DIED);
+#Ifdef DeathMessage;
 	else if(deadflag >= GS_DEATHMESSAGE) DeathMessage();
+#Endif;
 	print " ***^^";
-#ifV5;
+#Iftrue #version_number > 3;
 	style roman;
 #Endif;
 #Ifndef NO_SCORE;
-	ScoreSub();
+	<Score>;
 #Endif;
 	for(::) {
 		PrintMsg(MSG_RESTART_RESTORE_OR_QUIT);
@@ -2450,11 +2853,13 @@ Object thedark "Dunkelheit"
 		}
 #Endif;
 		if(verb_word == 'restart') @restart;
-		if(verb_word == 'restore') RestoreSub();
+		if(verb_word == 'restore') <Restore>;
+#Ifdef Amusing;
 		if(AMUSING_PROVIDED == 0 && deadflag == 2 && verb_word == 'amusing') Amusing();
+#Endif;
 		if(verb_word == 'quit') @quit;
 #IfDef OPTIONAL_FULL_SCORE;
-		if(verb_word == 'full') FullScoreSub();
+		if(verb_word == 'full') <FullScore>;
 #EndIf;
 	}
 ];
@@ -2463,23 +2868,23 @@ Object thedark "Dunkelheit"
 ! Routines marked NO are not supported in Puny, usually
 ! because the implementations differ too much.
 !
-#Stub AfterLife       0;
-#Stub AfterPrompt     0;
-#Stub Amusing         0;
-#Stub BeforeParsing   0;
-#Stub DeathMessage    0;
-#Stub GamePostRoutine 0;
-#Stub GamePreRoutine  0;
-#Stub InScope         1;
-#Stub LookRoutine     0;
-#Stub NewRoom         0;
-#Stub ParseNumber     2;
-#Stub PrintTaskName   1;
-#Stub PrintVerb       1;
-#Stub TimePasses      0;
-#Stub UnknownVerb     1;
-!NO #Stub ChooseObjects   2;
-!NO #Stub ParserError     1;
-#Ifndef OPTIONAL_NO_DARKNESS;
-#Stub DarkToDark      0;
-#Endif;
+!#Stub AfterLife	   0;
+!#Stub AfterPrompt	 0;
+!#Stub Amusing		 0;
+!#Stub BeforeParsing   0;
+!#Stub DeathMessage	0;
+!#Stub GamePostRoutine 0;
+!#Stub GamePreRoutine  0;
+!#Stub InScope		 1;
+!#Stub LookRoutine	 0;
+!#Stub NewRoom		 0;
+!#Stub ParseNumber	 2;
+!#Stub PrintTaskName   1;
+!#Stub PrintVerb	   1;
+!#Stub TimePasses	  0;
+!#Stub UnknownVerb	 1;
+!#Stub ChooseObjects   2; ! No need for stub
+!NO #Stub ParserError	 1;
+!#Ifndef OPTIONAL_NO_DARKNESS;
+!#Stub DarkToDark	  0;
+!#Endif;

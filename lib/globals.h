@@ -2,95 +2,92 @@
 !
 System_file;
 
-#IfV5;
-Zcharacter 'ä';
-Zcharacter 'ö';
-Zcharacter 'ü';
-Zcharacter 'ß';
-#EndIf;
+! German-specific global definitions and overrides
+Include "de/globals_de.h";
 
-Constant PUNYINFORM_MAJOR_VERSION = 4;
-Constant PUNYINFORM_MINOR_VERSION = 6;
-Constant PUNYINFORM_VERSION_SUFFIX = "dev"; ! Comment out if none
+Constant PUNYINFORM_MAJOR_VERSION = 6;
+Constant PUNYINFORM_MINOR_VERSION = 5;
+Constant PUNYINFORM_PATCH_VERSION = 0; ! Usually 0 (if zero, it is not printed in banner)
+Constant PUNYINFORM_VERSION_SUFFIX = ""; ! Comment out if none
 
-#Ifndef VN_1636;
-Message fatalerror "*** The PunyInform library needs Inform v6.36 or later to work ***";
+#Ifndef VN_1644;
+Message fatalerror "*** The PunyInform library needs Inform v6.44 or later to work ***";
 #Endif; ! VN_
 
 #IfnDef CUSTOM_ABBREVIATIONS;
-Abbreviate "are referring to.";
-Abbreviate " fixed in place.";
+Abbreviate "Are you sure you want to ";
+Abbreviate " descriptions o";
 Abbreviate "n't understand";
 Abbreviate "(first taking ";
-Abbreviate " doesn't seem";
-Abbreviate " seems to be";
-Abbreviate "But you are";
+Abbreviate "le objects w";
+Abbreviate " pitch dark ";
+Abbreviate "There is no";
 Abbreviate "unexpected.";
-Abbreviate "description";
+Abbreviate "But you are";
+Abbreviate "use multip";
 Abbreviate "You can't ";
-Abbreviate " nothing ";
 Abbreviate "something";
 Abbreviate " carrying";
-Abbreviate "There is";
-Abbreviate "multiple";
-Abbreviate "LookMode";
-Abbreviate " already";
+Abbreviate " nothing ";
+Abbreviate " already ";
+Abbreviate "holding ";
+Abbreviate "yourself";
+Abbreviate "wearing ";
+Abbreviate "[Comment";
+Abbreviate " itself.";
 Abbreviate "irection";
-Abbreviate " (which ";
-Abbreviate "contain";
-Abbreviate "/when_o";
 Abbreviate "You are";
-Abbreviate "before";
-Abbreviate "_array";
-Abbreviate "essage";
-Abbreviate "number";
-Abbreviate "would ";
-Abbreviate "closed";
+Abbreviate " number";
+Abbreviate "Inform ";
+Abbreviate " score";
 Abbreviate "You're";
-Abbreviate "object";
-Abbreviate "That's";
-Abbreviate " the ";
-Abbreviate " you ";
-Abbreviate "which";
-Abbreviate "thing";
-Abbreviate "witch";
+Abbreviate " refer";
+Abbreviate "eed to";
+Abbreviate "which ";
+Abbreviate "switch";
+Abbreviate "achiev";
+Abbreviate "would ";
+Abbreviate " game";
+Abbreviate " not ";
+Abbreviate "close";
 Abbreviate " that";
-Abbreviate "parse";
-Abbreviate "react";
-Abbreviate "able";
-Abbreviate "can ";
-Abbreviate "name";
-Abbreviate "n't ";
-Abbreviate " to ";
-Abbreviate "_to/";
-Abbreviate "see ";
-Abbreviate "ing ";
+Abbreviate " you ";
+Abbreviate "thing";
+Abbreviate " the ";
+Abbreviate "again";
 Abbreviate "here";
+Abbreviate "ing ";
+Abbreviate " to ";
+Abbreviate "n't ";
 Abbreviate "You ";
 Abbreviate "have";
-Abbreviate "self";
-Abbreviate "ed.";
-Abbreviate " no";
-Abbreviate "est";
-Abbreviate "ut ";
+Abbreviate " ***";
+Abbreviate "can ";
 Abbreviate " in";
-Abbreviate "ope";
-Abbreviate "ent";
-Abbreviate "eve";
-Abbreviate "Th";
-Abbreviate "I ";
-Abbreviate ", ";
-Abbreviate "In";
+Abbreviate " an";
+Abbreviate " on";
+Abbreviate "pen";
+Abbreviate "thi";
+Abbreviate "ver";
+Abbreviate "ly ";
+Abbreviate "ut ";
+Abbreviate "ed.";
+Abbreviate "s.";
 Abbreviate "e.";
+Abbreviate "I ";
+Abbreviate ".^";
+Abbreviate "Th";
+Abbreviate "]^";
+Abbreviate "'s";
 #EndIf;
 
 #IfDef STATUSLINE_TIME;
 #IfDef STATUSLINE_SCORE;
-Message fatalerror "Kann nicht STATUSLINE_TIME und STATUSLINE_SCORE definieren."
+Message fatalerror "Can't define both STATUSLINE_TIME and STATUSLINE_SCORE."
 #EndIf;
 #EndIf;
 
-Constant Grammar__Version = 2;
+Constant Grammar__Version = 3;
 Constant INDIV_PROP_START 64;
 Constant NULL         = $ffff;
 
@@ -139,29 +136,29 @@ Constant PHASE2_SCOPE           = 3;
 
 !Constant WORDSIZE 2; ! set by the compiler from Inform 6.30
 
-Constant ALL_WORD     = 'alles';
-Constant EXCEPT_WORD1 = 'außer';
-Constant EXCEPT_WORD2 = 'ausgenommen';
-Constant AND_WORD     = 'und';
-Constant THEN1__WD    = 'dann';
+#IfNDef ALL_WORD; Constant ALL_WORD = 'all'; #EndIf;
+#IfNDef EXCEPT_WORD1; Constant EXCEPT_WORD1 = 'but'; #EndIf;
+#IfNDef EXCEPT_WORD2; Constant EXCEPT_WORD2 = 'except'; #EndIf;
+#IfNDef AND_WORD; Constant AND_WORD = 'and'; #EndIf;
+#IfNDef THEN1__WD; Constant THEN1__WD = 'then'; #EndIf;
 Constant comma_word   = 'comma,';  ! An "untypeable word" used to substitute
-                                   ! for commas in parse buffers
+								   ! for commas in parse buffers
 
 ! Isolating words and punctuation for reuse and potential translation
-Constant SOMETHING_STR = "etwas";
-Constant SOMEONE_STR = "jemand";
-Constant SOMEDIRECTION_STR = "(eine Richtung)";
-Constant IS_STR = "ist ";
-Constant ARE_STR = "sind ";
+#IfNDef SOMETHING_STR; Constant SOMETHING_STR = "something"; #EndIf;
+#IfNDef SOMEONE_STR; Constant SOMEONE_STR = "someone"; #EndIf;
+#IfNDef SOMEDIRECTION_STR; Constant SOMEDIRECTION_STR = "(some direction)"; #EndIf;
+#IfNDef IS_STR; Constant IS_STR = "is "; #EndIf;
+#IfNDef ARE_STR; Constant ARE_STR = "are "; #EndIf;
+! String used between the last two items in an object list (overridable for translation)
+#IfNDef AND_LIST_STR; Constant AND_LIST_STR = " and "; #EndIf;
 
-#Ifndef DEFAULT_CAPACITY;
-Constant DEFAULT_CAPACITY = 100;
-#Endif;
+Default DEFAULT_CAPACITY = 100;
 
 #Ifdef OPTIONAL_PROVIDE_UNDO;
-#IfV3;
-Message warning "*** Skipping Undo - not supported in v3 ***";
-#IfNot;
+#Iftrue #version_number < 5;
+Message warning "*** Skipping Undo - not supported in v3,v4 ***";
+#Ifnot;
 Constant OPTIONAL_PROVIDE_UNDO_FINAL;
 #Endif;
 #Endif;
@@ -217,7 +214,7 @@ Property additive life   $ffff;
 Property initial;
 Property description;
 Property cant_go;
-Property found_in;         !  For fiddly reasons this can't alias
+Property found_in;		 !  For fiddly reasons this can't alias
 Property time_left;
 Property additive time_out $ffff;
 Property short_name 0;
@@ -296,16 +293,22 @@ Constant FAKE_U_OBJ = 10009;
 Constant FAKE_D_OBJ = 10010;
 Constant FAKE_IN_OBJ = 10011;
 Constant FAKE_OUT_OBJ = 10012;
-#IfV5;
-Array _direction_dict_words static --> 'n//' 's//' 'o//' 'w//' 'no' 'nw' 'se' 'sw' 'ra//' 'ru//' 0 0
-	'norden' 'süden' 'osten' 'westen' 'nordosten' 'nordwesten' 'südosten' 'südwesten' 'rauf' 'runter' 'in' 'aus';
+#Iftrue #version_number > 3;
+#IfNDef EXTRA_DIRECTION_ROW;
+Array _direction_dict_words static --> 'n//' 's//' 'e//' 'w//' 'ne' 'nw' 'se' 'sw' 'u//' 'd//' 0 0
+	'north' 'south' 'east' 'west' 'northeast' 'northwest' 'southeast' 'southwest' 'up' 'down' 'in' 'out';
+#IfNot;
+Array _direction_dict_words static --> 'n//' 's//' 'e//' 'w//' 'ne' 'nw' 'se' 'sw' 'u//' 'd//' 0 0
+	'north' 'south' 'east' 'west' 'northeast' 'northwest' 'southeast' 'southwest' 'up' 'down' 'in' 'out'
+	DE_NORD DE_SUED DE_OST DE_WEST DE_NORDOST DE_NORDWEST DE_SUEDOST DE_SUEDWEST DE_RAUF DE_RUNTER DE_REIN DE_RAUS;
+#EndIf;
 #Ifdef OPTIONAL_SHIP_DIRECTIONS;
-Array _ship_direction_dict_words static --> 'f//' 'a//' 'sb' 'p//' 0 0 0 0 'ra//' 'ru//' 0 0
-	'vorne' 'hinten' 'steuerbord' 'backbord' 0 0 0 0 'rauf' 'runter' 'in' 'aus';
+Array _ship_direction_dict_words static --> 'f//' 'a//' 'sb' 'p//' 0 0 0 0 'u//' 'd//' 0 0
+	'fore' 'aft' 'starboard' 'port' 0 0 0 0 'up' 'down' 'in' 'out';
 #Endif;
 #Endif;
 Array direction_properties_array static -> 0 n_to s_to e_to w_to ne_to nw_to se_to sw_to u_to d_to in_to out_to;
-Array direction_name_array static --> "richtung" "norden" "süden" "osten" "westen" "nordosten" "nordwesten" "südosten" "südwesten" "rauf" "runter" "in" "aus";
+Array direction_name_array static --> "direction" "north" "south" "east" "west" "northeast" "northwest" "southeast" "southwest" "up" "down" "in" "out";
 Constant DIRECTION_COUNT = 12;
 
 #IfNot; ! not OPTIONAL_FULL_DIRECTIONS
@@ -314,109 +317,83 @@ Constant FAKE_U_OBJ = 10005;
 Constant FAKE_D_OBJ = 10006;
 Constant FAKE_IN_OBJ = 10007;
 Constant FAKE_OUT_OBJ = 10008;
-#IfV5;
-Array _direction_dict_words static --> 'n//' 's//' 'o//' 'w//' 'ra//' 'ru//' 0 0
-	'norden' 'süden' 'osten' 'westen' 'rauf' 'runter' 'in' 'aus';
+#Iftrue #version_number > 3;
+#IfNDef EXTRA_DIRECTION_ROW;
+Array _direction_dict_words static --> 'n//' 's//' 'e//' 'w//' 'u//' 'd//' 0 0
+	'north' 'south' 'east' 'west' 'up' 'down' 'in' 'out';
+#IfNot;
+Array _direction_dict_words static --> 'n//' 's//' 'e//' 'w//' 'u//' 'd//' 0 0
+	'north' 'south' 'east' 'west' 'up' 'down' 'in' 'out'
+	DE_NORD DE_SUED DE_OST DE_WEST DE_RAUF DE_RUNTER DE_REIN DE_RAUS;
+#EndIf;
 #Ifdef OPTIONAL_SHIP_DIRECTIONS;
-Array _ship_direction_dict_words static --> 'v//' 'h//' 'st' 'b//' 'ra//' 'ru//' 0 0
-	'vorne' 'hinten' 'steuerbord' 'backbord' 'rauf' 'runter' 'in' 'aus';
+Array _ship_direction_dict_words static --> 'f//' 'a//' 'sb' 'p//' 'u//' 'd//' 0 0
+	'fore' 'aft' 'starboard' 'port' 'up' 'down' 'in' 'out';
 #Endif;
 #Endif;
 Array direction_properties_array static -> 0 n_to s_to e_to w_to u_to d_to in_to out_to;
-Array direction_name_array static --> "richtung" "norden" "süden" "osten" "westen" "rauf" "runter" "in" "aus";
+Array direction_name_array static --> "direction" "north" "south" "east" "west" "up" "down" "in" "out";
 Constant DIRECTION_COUNT = 8;
 
 #EndIf; ! not OPTIONAL_FULL_DIRECTIONS
 
 #IfDef OPTIONAL_ALLOW_WRITTEN_NUMBERS;
 Array LanguageNumbers static table
-    'eins' 1 'zwei' 2 'drei' 3 'vier' 4 'fünf' 5
-    'sechs' 6 'sieben' 7 'acht' 8 'neun' 9 'zehn' 10
-    'elf' 11 'zwölf' 12 'dreizehn' 13 'vierzehn' 14 'fünfzehn' 15
-    'sechszehn' 16 'siebzehn' 17 'achtzehn' 18 'neunzehn' 19 'zwanzig' 20;
+	'one' 1 'two' 2 'three' 3 'four' 4 'five' 5
+	'six' 6 'seven' 7 'eight' 8 'nine' 9 'ten' 10
+	'eleven' 11 'twelve' 12 'thirteen' 13 'fourteen' 14 'fifteen' 15
+	'sixteen' 16 'seventeen' 17 'eighteen' 18 'nineteen' 19 'twenty' 20;
 #EndIf;
 
 #Ifdef OPTIONAL_LANGUAGE_NUMBER;
 #Ifdef OPTIONAL_ALLOW_WRITTEN_NUMBERS;
-#IfV3;
+#Iftrue #version_number < 4;
 Array LanguageNumberStrings static -->
-    "dreizehn"
-    "vierzehn"
-    "fünfzehn"
-    "sechszehn"
-    "siebzehn"
-    "achtzehn"
-    "neunzehn";
+	"thirteen"
+	"fourteen"
+	"fifteen"
+	"sixteen"
+	"seventeen"
+	"eighteen"
+	"nineteen";
 #Endif;
 #Ifnot; ! Not OPTIONAL_ALLOW_WRITTEN_NUMBERS
 Array LanguageNumberStrings static -->
-	"eins"
-	"zwei"
-	"drei"
-    "vier"
-    "fünf"
-    "sechs"
-    "sieben"
-    "acht"
-    "neun"
-    "zehn"
-    "elf"
-    "zwölf"
-    "dreizehn"
-    "vierzehn"
-    "fünfzehn"
-    "sechszehn"
-    "siebzehn"
-    "achtzehn"
-    "neunzehn";
+	"one"
+	"two"
+	"three"
+	"four"
+	"five"
+	"six"
+	"seven"
+	"eight"
+	"nine"
+	"ten"
+	"eleven"
+	"twelve"
+	"thirteen"
+	"fourteen"
+	"fifteen"
+	"sixteen"
+	"seventeen"
+	"eighteen"
+	"nineteen";
 #Endif; ! Not OPTIONAL_ALLOW_WRITTEN_NUMBERS
 
 Array LanguageNumberTensStrings static -->
-	"zwanzig"
-    "dreißig"
-    "vierzig"
-    "fünfzig"
-    "sechszig"
-    "siebzig"
-    "achtzig"
-    "neunzig";
+	"twenty"
+	"thirty"
+	"forty"
+	"fifty"
+	"sixty"
+	"seventy"
+	"eighty"
+	"ninety";
 #Endif; ! OPTIONAL_LANGUAGE_NUMBER
 
-Constant ARTICLE_EINE    = 0;
-Constant ARTICLE_EIN     = 3;
-Constant ARTICLE_EINEN   = 6;
-
-Array LanguageArticles-->
-   "Die "  "die "  "eine "   
-   "Das "  "das "  "ein "    
-   "Der "  "der "  "einen "    
-;!End_Array
-
-Array StorageForShortName buffer 12;
-
-#IfV5; 
-! From library 6.12
-[ LTI_Insert i ch  b y; !WARNING vrifier pour v3
-
-    ! Protect us from strict mode, as this isn't an array in quite the
-    ! sense it expects
-    b = buffer;
-
-    ! Insert character ch into buffer at point i.
-    ! Being careful not to let the buffer possibly overflow:
-    y = b->1;
-    if (y > b->0) y = b->0;
-
-    ! Move the subsequent text along one character:
-    for (y=y+2 : y>i : y--) b->y = b->(y-1);
-    b->i = ch;
-    ! And the text is now one character longer:
-    if (b->1 < b->0) (b->1)++;
-];
-#Endif;
 
 Constant TT_OBJECT           = 1;    ! one or more words referring to an object
-                                     ! it is one of NOUN_TOKEN etc. below
+									 ! it is one of NOUN_OBJECT etc. below
 Constant TT_PREPOSITION      = 2;    ! e.g. 'into'
 Constant TT_ROUTINE_FILTER   = 3;    ! e.g. noun=CagedCreature
 Constant TT_ATTR_FILTER      = 4;    ! e.g. edible
@@ -439,6 +416,13 @@ Constant GPR_FAIL           = -1;   ! Return values from General Parsing
 Constant GPR_PREPOSITION    = 0;    ! Routines
 Constant GPR_NUMBER         = 1;
 Constant GPR_MULTIPLE       = 2;
+Constant GPR_NOUN           = -256; ! Reparse, but as NOUN_OBJECT this time
+Constant GPR_HELD           = GPR_NOUN + 1; ! ditto for HELD_OBJECT
+Constant GPR_MULTI          = GPR_NOUN + 2; ! and so on...
+Constant GPR_MULTIHELD      = GPR_NOUN + 3;
+Constant GPR_MULTIEXCEPT    = GPR_NOUN + 4;
+Constant GPR_MULTIINSIDE    = GPR_NOUN + 5;
+Constant GPR_CREATURE       = GPR_NOUN + 6;
 Constant GPR_REPARSE        = 10000;
 
 Constant TOKEN_SINGLE_PREP   = $42; ! 66
@@ -456,14 +440,24 @@ Constant FORM_CDEF           = 1;
 Constant FORM_DEF            = 2;
 Constant FORM_INDEF          = 3;
 
-#IfV3;
-Constant DICT_BYTES_FOR_WORD = 4;
-#IfNot;
-Constant DICT_BYTES_FOR_WORD = 6;
-Constant MOVES__TX = " Züge: ";
-Constant SCORE__TX = " Punkte: ";
-Constant TIME__TX = " Zeit: ";
-#EndIf;
+#Iftrue #version_number < 4;
+	Constant DICT_BYTES_FOR_WORD = 4;
+#Ifnot;
+	Constant DICT_BYTES_FOR_WORD = 6;
+	#Ifndef STATUSLINE_TIME;
+		#Ifndef OPTIONAL_SL_NO_MOVES;
+			#IfNDef MOVES__TX; Constant MOVES__TX = " Moves: "; #EndIf;
+			#IfNDef MOVES_SHORT__TX; Constant MOVES_SHORT__TX = " Mv:"; #EndIf;
+		#Endif;
+		#Ifndef OPTIONAL_SL_NO_SCORE;
+			#IfNDef SCORE__TX; Constant SCORE__TX = " Score: "; #EndIf;
+			#IfNDef SCORE_SHORT__TX; Constant SCORE_SHORT__TX = " Sc:"; #EndIf;
+		#Endif;
+	#Endif;
+	#Ifndef STATUSLINE_SCORE;
+		Constant TIME__TX = " Time: ";
+	#Endif;
+#Endif;
 
 !#Default Story        0;
 !#Default Headline     0;
@@ -482,6 +476,12 @@ Global location = INITIAL_LOCATION_VALUE;		! Must be the first global to show lo
 	#EndIf;
 #EndIf;
 
+Constant PARSING_REASON       = 0;  ! Possible reasons for searching scope
+Constant EACH_TURN_REASON     = 2;
+Constant REACT_BEFORE_REASON  = 3;
+Constant REACT_AFTER_REASON   = 4;
+Constant LOOPOVERSCOPE_REASON = 5;
+Constant TESTSCOPE_REASON     = 6;
 
 #Ifdef NO_SCORE;
 #Ifndef OPTIONAL_SL_NO_SCORE;
@@ -512,8 +512,8 @@ Global actor;
 Global wn;               ! word number within parse array
 Global pattern_pointer;  ! token within current pattern
 Global num_words;        ! number of words typed
-Global action;           ! the current action
-Global action_to_be;     ! the action being considered
+Global action = NULL;    ! the current action
+Global action_to_be = NULL; ! the action being considered
 Global action_reverse;   ! if parameters are in reversed order
 Global meta;             ! if the verb has the meta attribute or not
 Global update_moved;     ! if _NoteObjectAcquisitions should update moved
@@ -539,12 +539,14 @@ Global parser_phase;     ! the current phase
 Global parser_action;    ! needed for parse_name, ##PluralFound (see DM)
 Global parser_check_multiple;    ! parser should check if multiheld/multiinside
 Global parser_unknown_noun_found;! parser should report unknown word
+Global oops_unfixed = 0;         ! attempt to fix unknown word failed
 Global parser_all_found;! parser encountered 'all'
 Global parser_all_except_object; ! used to filter all but/except patterns
 Global parser_one; ! Used to pass extra information between user code and parser
 Global parser_two; ! Used to pass extra information between user code and parser
 Global usual_grammar_after; ! needed for grammar property parsing
 Global deadflag;
+Global scope_reason = PARSING_REASON; ! The reason scope is being calculated, see constants *_REASON
 Global scope_modified;   ! true if daemons, each_turn etc has invalidated scope
 Global scope_objects;
 Global scope_copy_objects;
@@ -557,7 +559,6 @@ Global himobj = 0;       ! The object which is currently "him"
 Global herobj = 0;       ! The object which is currently "her"
 Global themobj = 0;       ! The object which is currently "them"
 Global top_object;
-Global newline_flag;     ! Used by Look
 Global also_flag;        ! Used by Look
 Global inventory_style = 1;
 Global inventory_stage;
@@ -566,6 +567,8 @@ Global receive_action;
 Global run_after_routines_msg;
 Global run_after_routines_arg_1;
 Global no_implicit_actions;         ! Don't implicitly do things.
+Global caps_mode;
+Global last_light_source;
 #Ifdef OPTIONAL_MANUAL_SCOPE_BOOST;
 Global react_before_in_scope;
 Global react_after_in_scope;
@@ -595,7 +598,16 @@ Constant CLR_MAGENTA         = 7;
 Constant CLR_CYAN            = 8;
 Constant CLR_WHITE           = 9;
 
-#IfV5;
+Constant CLR_OZMOO_ORANGE      = 16;
+Constant CLR_OZMOO_BROWN       = 17;
+Constant CLR_OZMOO_LIGHT_RED   = 18;
+Constant CLR_OZMOO_DARK_GREY   = 19;
+Constant CLR_OZMOO_MEDIUM_GREY = 20;
+Constant CLR_OZMOO_LIGHT_GREEN = 21;
+Constant CLR_OZMOO_LIGHT_BLUE  = 22;
+Constant CLR_OZMOO_LIGHT_GREY  = 23;
+
+#Iftrue #version_number > 3;
 Constant WIN_ALL     0;
 Constant WIN_STATUS  1;
 Constant WIN_MAIN    2;
@@ -603,12 +615,14 @@ Global screen_width;
 Global statusline_current_height = 0;
 Global statusline_height     = 1;
 Global statuswin_current     = false;
+#Iftrue #version_number > 4;
 Global clr_on                = false;
 Global clr_bg                = CLR_BLACK;
 Global clr_fg                = CLR_WHITE;
 Global clr_fgstatus          = CLR_CURRENT;
 Global clr_fginput           = CLR_CURRENT;
-#endif;
+#Endif;
+#Endif;
 
 Global normal_directions_enabled = true;
 #Ifdef OPTIONAL_SHIP_DIRECTIONS;
@@ -630,18 +644,14 @@ Array scope-->MAX_SCOPE; ! objects visible from the current POV
 Array scope_copy-->MAX_SCOPE; ! Used to hold a copy of a scope list, for iteration
 
 Constant WORD_HIGHBIT = $8000;
-#Ifndef MAX_TIMERS;
-Constant MAX_TIMERS  32;            ! Max number timers/daemons active at once
-#Endif; ! MAX_TIMERS
+Default MAX_TIMERS  32;            ! Max number timers/daemons active at once
 Array  the_timers --> MAX_TIMERS;
 Global active_timers;               ! Number of timers/daemons active
 Global current_timer;               ! Index of the timer which is currently being executed
 
 Global PrintMsg = _PrintMsg;        ! Using a global for this saves one byte per call
 
-#Ifndef MAX_FLOATING_OBJECTS;
-Constant MAX_FLOATING_OBJECTS  32;            ! Max number of objects that have found_in property
-#Endif; ! MAX_FLOATING_OBJECTS
+Default MAX_FLOATING_OBJECTS  32;            ! Max number of objects that have found_in property
 Array floating_objects --> MAX_FLOATING_OBJECTS + 1;
 
 Global c_style = 0;
@@ -659,9 +669,13 @@ Global listing_together; ! The first object# in the group when listing together
 Global lt_value;
 #Endif;
 
+Global input_action;
+Global input_noun;
+Global input_second;
+Global input_direction;
 
-Array which_object-->MAX_WHICH_OBJECTS;       ! options for "which book?"
-Array multiple_objects-->MAX_MULTIPLE_OBJECTS;! holds nouns when multi* used
+Array which_object-->MAX_WHICH_OBJECTS+1;       ! options for "which book?"
+Array multiple_objects-->MAX_MULTIPLE_OBJECTS+1;! holds nouns when multi* used
 
 Array buffer->(MAX_INPUT_CHARS + 3);
 Array parse->(2 + 4 * (MAX_INPUT_WORDS + 1)); ! + 1 to make room for an extra word which is set to 0
@@ -669,7 +683,22 @@ Array parse->(2 + 4 * (MAX_INPUT_WORDS + 1)); ! + 1 to make room for an extra wo
 ! extra arrays to be able to ask for additional info (do you mean X or Y?)
 Array buffer2->(MAX_INPUT_CHARS + 3);
 Array parse2->(2 + 4 * (MAX_INPUT_WORDS + 1));
-Array parse3->(2 + 4 * (MAX_INPUT_WORDS + 1));
+Array parse3->(2 + 4 * (MAX_INPUT_WORDS + 1)); ! Must be placed directly after parse2 (used together for empty_arr below)
+
+#Iftrue 4*MAX_INPUT_WORDS >= MAX_SCOPE;
+Constant empty_arr = parse2;
+#Ifnot;
+Array empty_arr --> MAX_SCOPE;
+#Endif;
+
+! Constants and global used to accelerate RunRoutines() in puny.h
+Constant _PunyZRegionCase1 = 1;
+Constant _PunyZRegionCase2 = 0;
+!Constant _PunyZRegionCase3 = 3; ! CAN'T HAPPEN!?
+! _puny_zregion_case Must start as case 2 (main changes it to case 1 if needed)
+Global _puny_zregion_case = _PunyZRegionCase1; 
+Global IsARoutine = _IsARoutine_Case1;
+Global IsAString = _IsAString_Case1;
 
 Constant RTE_MINIMUM = 0;
 Constant RTE_NORMAL  = 1;
@@ -696,7 +725,7 @@ Global places_score;
 #IfDef OPTIONAL_FULL_SCORE;
 #IfDef TASKS_PROVIDED;
 Default NUMBER_TASKS        1;
-Array  task_done -> NUMBER_TASKS;
+Array  task_done -> NUMBER_TASKS; ! The compiler sets all elements to 0
 #Ifndef task_scores;
 Array task_scores -> 1;
 #Endif;
@@ -705,29 +734,39 @@ Array task_scores -> 1;
 
 Object Directions
 	with
-		description "Ein Blick in diese Richtung zeigt nichts Neues.",
+		description "A look in that direction reveals nothing new.",
 		short_name [;
 			print (string) direction_name_array-->selected_direction_index;
 			rtrue;
 		],
-#IfV5;
+#iftrue #version_number > 3;
 		parse_name [_parse _i _w _arr;
 #IfNot;
 		parse_name [_parse _i _w;
 #EndIf;
-#IfV5;
+#iftrue #version_number > 3;
 !			_parse = parse+4*wn-2;
+	#Iftrue #version_number > 4;
 			@log_shift wn 2 -> _parse; ! Multiply by 4
+	#Ifnot;
+			_parse = wn * 4;
+	#Endif;
 			_parse = parse + _parse - 2;
 
 			_w = _parse-->0;
+			@jz _w ?rfalse; ! If word is not in dictionary, it's not a direction
+
 			_arr = _direction_dict_words;
 			if(normal_directions_enabled) {
+#IfDef EXTRA_DIRECTION_ROW;
+				@scan_table _w _arr (DIRECTION_COUNT * 3) -> _i ?_matched_word_in_list;
+#IfNot;
 				@scan_table _w _arr (DIRECTION_COUNT * 2) -> _i ?_matched_word_in_list;
+#EndIf;
 #Ifndef OPTIONAL_SHIP_DIRECTIONS;
 				if(_w == 'floor' or 'ground') {
 					selected_direction_index = DIRECTION_COUNT - 2;
-	        		jump _matched_and_have_set_dir_index;
+					jump _matched_and_have_set_dir_index;
 				}
 #Endif;
 			}
@@ -739,7 +778,7 @@ Object Directions
 			if((normal_directions_enabled || ship_directions_enabled) &&
 					_w == 'floor' or 'ground') {
 				selected_direction_index = DIRECTION_COUNT - 2;
-        		jump _matched_and_have_set_dir_index;
+				jump _matched_and_have_set_dir_index;
 			}
 #EndIf;
 			! no match
@@ -748,51 +787,56 @@ Object Directions
 			return 0;
 ._matched_word_in_list;
 			_i = _i - _arr;
+#Iftrue #version_number > 4;
 			@log_shift _i (-1) -> _i; ! Divide by 2
+#Ifnot;
+			_i = _i / 2;
+#Endif;
 			selected_direction_index = (_i % DIRECTION_COUNT) + 1;
 ._matched_and_have_set_dir_index;
 			selected_direction = direction_properties_array -> selected_direction_index;
 			return 1;
-#IfNot;
+#Ifnot;
 			! This is V3
 
 			_parse = parse+4*wn-2;
 			_w = _parse-->0;
+			@jz _w ?rfalse; ! If word is not in dictionary, it's not a direction
 
 			if(normal_directions_enabled) {
 #Ifndef OPTIONAL_SHIP_DIRECTIONS;
-				@je _w 'aus' ?_matched_out;
+				@je _w 'out' ?_matched_out;
 				@je _w 'in' ?_matched_in;
-				@je _w 'd//' 'runter' ?_matched_d;
+				@je _w 'd//' 'down' ?_matched_d;
 				@je _w 'floor' 'ground' ?_matched_d;
-				@je _w 'ra//' 'rauf' ?_matched_u;
+				@je _w 'u//' 'up' ?_matched_u;
 #Endif;
 #Ifdef OPTIONAL_FULL_DIRECTIONS;
-				@je _w 'so' 'südosten' ?_matched_se;
-				@je _w 'sw' 'südwesten' ?_matched_sw;
-				@je _w 'no' 'nordosten' ?_matched_ne;
-				@je _w 'nw' 'nordwesten' ?_matched_nw;
+				@je _w 'se' 'southeast' ?_matched_se;
+				@je _w 'sw' 'southwest' ?_matched_sw;
+				@je _w 'ne' 'northeast' ?_matched_ne;
+				@je _w 'nw' 'northwest' ?_matched_nw;
 #Endif;
-				@je _w 'o//' 'osten' ?_matched_e;
-				@je _w 'w//' 'westen' ?_matched_w;
-				@je _w 's//' 'süden' ?_matched_s;
-				@je _w 'n//' 'norden' ?_matched_n;
+				@je _w 'e//' 'east' ?_matched_e;
+				@je _w 'w//' 'west' ?_matched_w;
+				@je _w 's//' 'south' ?_matched_s;
+				@je _w 'n//' 'north' ?_matched_n;
 			}
 
 #Ifdef OPTIONAL_SHIP_DIRECTIONS;
 			if(normal_directions_enabled || ship_directions_enabled) {
-				@je _w 'aus' ?_matched_out;
+				@je _w 'out' ?_matched_out;
 				@je _w 'in' ?_matched_in;
-				@je _w 'd//' 'runter' ?_matched_d;
+				@je _w 'd//' 'down' ?_matched_d;
 				@je _w 'floor' 'ground' ?_matched_d;
-				@je _w 'ra//' 'rauf' ?_matched_u;
+				@je _w 'u//' 'up' ?_matched_u;
 			}
 
 			if(ship_directions_enabled) {
-				@je _w 'sb' 'steuerbord' ?_matched_e;
-				@je _w 'p//' 'backbord' ?_matched_w;
-				@je _w 'h//' 'hinten' ?_matched_s;
-				@je _w 'v//' 'vorne' ?_matched_n;
+				@je _w 'sb' 'starboard' ?_matched_e;
+				@je _w 'p//' 'port' ?_matched_w;
+				@je _w 'a//' 'aft' ?_matched_s;
+				@je _w 'f//' 'fore' ?_matched_n;
 			}
 
 #Endif; ! OPTIONAL_SHIP_DIRECTIONS
@@ -830,3 +874,5 @@ has scenery
 #Ifdef OPTIONAL_LIST_TOGETHER;
 Object _PunyObj;
 #Endif;
+
+

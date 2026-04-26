@@ -1,1 +1,14 @@
-inform6.exe
+local
+tools/inform6.exe
+tools/Lectrote/
+
+# Build outputs (compiled game files)
+build/ascii*
+
+# Test outputs (pytest cache, reports)
+test/
+.pytest_cache/
+**/__pycache__/
+gameinfo.dbg
+.venv/
+

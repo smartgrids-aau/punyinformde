@@ -1,0 +1,14 @@
+!% -~S
+!% -Cu
+!% $OMIT_UNUSED_ROUTINES=1
+!% $ZCODE_LESS_DICT_DATA=1
+
+! ASCII wrapper for sterne.inf.
+! Defines USE_ASCII before including the main game source so that:
+!   - Zcharacter declarations for ä/ö/ü/ß are skipped
+!   - Parser messages use digraph forms (ae/oe/ue/ss) instead of umlauts
+!   - All game commands work with ASCII digraph input (oeffne, schluessel, …)
+! This file is compiled to build/sterne.ascii.z5 alongside the UTF-8 version.
+Constant USE_ASCII;
+
+Include "sterne.inf";

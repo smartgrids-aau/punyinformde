@@ -1,0 +1,45 @@
+schau
+riech
+hör
+untersuche schreibtisch
+untersuche ring
+untersuche alte nadel
+nimm münzen
+untersuche sie
+lege münzen auf schreibtisch
+untersuche feinem tuch
+nimm münzen
+untersuche sie
+lege münzen auf schreibtisch
+nimm kompass
+untersuche ihn
+lege alten kompass auf schreibtisch
+nimm karte
+untersuche alte karte
+untersuche karte
+inventar
+untersuche koje
+untersuche kiste
+schau in kiste
+öffne kiste
+untersuche sie
+nimm kleinen schlüssel
+untersuche ihn
+schließ tür mit schlüssel auf
+öffne tür
+nord
+lies plakat
+berühr glocke
+geh rauf
+kletter mast
+warte
+schau
+rede mit steuermann
+1
+rede mit papagei
+1
+rede mit navigatorin
+1
+nimm fernrohr
+untersuche es
+

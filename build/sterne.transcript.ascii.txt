@@ -1,0 +1,217 @@
+
+
+
+Du wachst auf. Die Kajuete schwankt im Seegang, und
+Licht faellt durch das kleine Bullauge. Du erinnerst dich:
+Gestern Abend hat jemand deine Kajuetentuer von aussen abgeschlossen.
+Wer -- und warum? Es wird Zeit, das herauszufinden.
+
+
+Das Schiff der Sterne
+Ein kurzes Abenteuer auf hoher See.
+Release 1 / Serial number 260426 / Inform v6.44 PunyInformDE v6.5 R
+
+Die Kapitaenskajuete
+Die enge Kajuete des Kapitaens auf dem Segelschiff Sternwind. Ein alter
+Schreibtisch steht an der Nordwand, bedeckt mit vergilbten Seekarten. Eine
+hoelzerne Koje liegt an der Ostwand. Eine schwere Eichentuer fuehrt nach Norden
+in den Schiffsgang.
+
+Hier befinden sich eine Kajuetentuer und eine Seekiste (geschlossen).
+
+> schau
+Die Kapitaenskajuete
+Die enge Kajuete des Kapitaens auf dem Segelschiff Sternwind. Ein alter
+Schreibtisch steht an der Nordwand, bedeckt mit vergilbten Seekarten. Eine
+hoelzerne Koje liegt an der Ostwand. Eine schwere Eichentuer fuehrt nach Norden
+in den Schiffsgang.
+
+Hier befinden sich eine Kajuetentuer und eine Seekiste (geschlossen).
+
+> riech
+Du riechst nichts Unerwartetes.
+
+> hoer
+Du hoerst nichts Unerwartetes.
+
+> untersuche schreibtisch
+Ein schwerer Eichenschreibtisch, bedeckt mit vergilbten Seekarten und Notizen.
+Darauf liegen eine Seekarte, ein alter Kompass und einige Goldmuenzen.
+
+> untersuche ring
+Du erkennst nichts Besonderes an dem kleinen Ring.
+
+> untersuche alte nadel
+Du erkennst nichts Besonderes an der alten Nadel.
+
+> nimm muenzen
+Genommen.
+
+> untersuche sie
+Fuenf glaenzende Goldmuenzen mit dem Abbild eines Seeadlers.
+
+> lege muenzen auf schreibtisch
+Du legst die Goldmuenzen auf den Schreibtisch.
+
+> untersuche feinem tuch
+Du erkennst nichts Besonderes an dem feinen Tuch.
+
+> nimm muenzen
+Genommen.
+
+> untersuche sie
+Fuenf glaenzende Goldmuenzen mit dem Abbild eines Seeadlers.
+
+> lege muenzen auf schreibtisch
+Du legst die Goldmuenzen auf den Schreibtisch.
+
+> nimm kompass
+Genommen.
+
+> untersuche ihn
+Ein alter Messing-Kompass mit einer zuverlaessigen Nadel. Auf dem Gehaeuse ist
+ein Anker eingraviert.
+
+> lege alten kompass auf schreibtisch
+Du legst den alten Kompass auf den Schreibtisch.
+
+> nimm karte
+Genommen.
+
+> untersuche alte karte
+Eine alte Seekarte des oestlichen Ozeans. Ein roter Kreis markiert eine kleine
+Insel weit im Osten. Daneben steht in krakeliger Schrift: Das Fernrohr zeigt den
+Weg!
+
+> untersuche karte
+Eine alte Seekarte des oestlichen Ozeans. Ein roter Kreis markiert eine kleine
+Insel weit im Osten. Daneben steht in krakeliger Schrift: Das Fernrohr zeigt den
+Weg!
+
+> inventar
+Du hast eine alte Seekarte.
+
+> untersuche koje
+Eine schmale Koje mit einer duennen Matratze. Darunter steht eine alte Kiste,
+deren Deckel mit einem Anker verziert ist.
+
+> untersuche kiste
+Eine alte, schwere Seekiste. Der Deckel ist mit einem geschnitzten Anker
+verziert.
+
+> schau in kiste
+Du kannst nicht reinschauen, die Seekiste ist geschlossen.
+
+> oeffne kiste
+Du oeffnest die Seekiste und siehst einen kleinen Schluessel.
+
+> untersuche sie
+Eine alte, schwere Seekiste. Der Deckel ist mit einem geschnitzten Anker
+verziert.
+
+> nimm kleinen schluessel
+Genommen.
+
+[Du hast 1 Punkt erhalten.]
+
+> untersuche ihn
+Ein kleiner Messingschluessel mit einem Ankeranhaenger -- passend zu dem alten
+Schloss an der Kajuetentuer.
+
+> schliess tuer mit schluessel auf
+Du schliesst die Kajuetentuer auf.
+
+[Du hast 1 Punkt erhalten.]
+
+> oeffne tuer
+Du oeffnest die Kajuetentuer.
+
+> nord
+Der Schiffsgang
+Ein enger Gang. Das Holz knarzt unter deinen Fuessen. Im Sueden liegt die
+Kapitaenskajuete. Eine rostige Eisentreppe fuehrt nach oben zum Deck. An der
+Wand haengt ein altes Schiffsplakat, daneben eine kleine Signalglocke.
+
+> lies plakat
+Du liest: Ruhe im Gang. Keine offenen Flammen unter Deck.
+
+> beruehr glocke
+Die Glocke klingelt hell durch den ganzen Gang.
+
+> geh rauf
+Das Oberdeck
+Du stehst auf dem Oberdeck der Sternwind. Salzige Meeresluft weht dir ins
+Gesicht. Ein maechtiger Mast ragt in den wolkenlosen Abendhimmel. Im Westen
+glueht die untergehende Sonne. Die Eisentreppe fuehrt nach unten.
+
+Hier befinden sich Steuermann Hinnerk, Navigatorin Elara, Molly und ein Messing-
+Fernrohr.
+
+> kletter mast
+Du versuchst den Mast hinaufzuklettern, rutschst aber ab und landest wieder auf
+Deck.
+
+> warte
+Nichts passiert.
+
+> schau
+Das Oberdeck
+Du stehst auf dem Oberdeck der Sternwind. Salzige Meeresluft weht dir ins
+Gesicht. Ein maechtiger Mast ragt in den wolkenlosen Abendhimmel. Im Westen
+glueht die untergehende Sonne. Die Eisentreppe fuehrt nach unten.
+
+Hier befinden sich Steuermann Hinnerk, Navigatorin Elara, Molly und ein Messing-
+Fernrohr.
+
+> rede mit steuermann
+Du: "Was siehst du dort draussen?"
+Steuermann Hinnerk: "Steuermann Hinnerk kneift die Augen zusammen. Der Wind
+bleibt ruhig. Gute Sicht nach Osten."
+
+Damit endet euer kurzes Gespraech.
+
+[Du hast 1 Punkt erhalten.]
+
+> rede mit papagei
+Du: "Was hast du gehoert, Molly?"
+Molly: "Der Papagei kraechzt laut: Wo ist Marten? BRAAK!"
+
+Damit endet euer kurzes Gespraech.
+
+[Du hast 1 Punkt erhalten.]
+
+> rede mit navigatorin
+Du: "Was ist unser Kurs?"
+Navigatorin Elara: "Navigatorin Elara tippt auf die Seekarte. Der richtige
+Winkel fehlt noch."
+
+Die Navigatorin nickt. Mit ernstmimischer Miene ueberreicht sie dir ihren
+Kompass. Du hast ihn, die Karte und jetzt die drei Berichte der Crew. Alles
+deutet auf die Insel hin. Es wird Zeit, dass du das Fernrohr nutzt!
+
+Damit endet euer kurzes Gespraech.
+
+> nimm fernrohr
+Genommen.
+
+> untersuche es
+Du richtest das Messing-Fernrohr nach Osten und schaust hindurch.
+Am Horizont, im letzten Licht der Sonne, liegt eine Insel! Auf einem
+Felsen erkennst du deutlich ein eingemeiseltes Kreuz -- das Zeichen
+fuer einen vergrabenen Schatz.
+
+Du senkst das Fernrohr und laechelst.
+Die Seekarte, der Bericht des Steuermanns, der Papagei und die
+Navigatorin hatten alle Recht gehabt!
+
+
+[Du hast 1 Punkt erhalten.]
+
+
+  *** Du hast gewonnen ***
+
+In diesem Spiel hast du 5 von 5 moeglichen Punkten erreicht, in 41 Zuegen.
+
+Moechtest du NEUSTART, WIEDERHERSTELLEN oder BEENDEN? 
+
+Moechtest du NEUSTART, WIEDERHERSTELLEN oder BEENDEN? 

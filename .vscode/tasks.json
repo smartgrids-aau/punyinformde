@@ -1,0 +1,111 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build",
+      "type": "shell",
+      "command": "powershell -ExecutionPolicy Bypass -File .vscode\\build.ps1",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": {
+        "owner": "inform6",
+        "fileLocation": ["relative", "${workspaceFolder}"],
+        "pattern": {
+          "regexp": "^(.+)\\((\\d+)\\):\\s+(Error|Warning|Fatal):\\s+(.+)$",
+          "file": 1,
+          "line": 2,
+          "severity": 3,
+          "message": 4
+        }
+      }
+    },
+    {
+      "label": "Test Dfrotz",
+      "type": "shell",
+      "command": "tools\\dfrotz.exe build\\sterne.z5",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": ["Build"],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test Lectrote",
+      "type": "shell",
+      "command": "tools\\Lectrote\\Lectrote.exe build\\sterne.z5",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": ["Build"],
+      "group": {
+        "kind": "test"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test Dfrotz (ASCII)",
+      "type": "shell",
+      "command": "tools\\dfrotz.exe build\\sterne.ascii.z5",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": ["Build"],
+      "group": {
+        "kind": "test"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test Lectrote (ASCII)",
+      "type": "shell",
+      "command": "tools\\Lectrote\\Lectrote.exe build\\sterne.ascii.z5",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": ["Build"],
+      "group": {
+        "kind": "test"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "clear": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}
+

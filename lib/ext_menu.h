@@ -27,14 +27,7 @@ Global item_width;
 Global item_name;
 Global menu_nesting;
 
-#IfV5;
-Zcharacter '@{0e4}';
-Zcharacter 'ö';
-Zcharacter '@{0fc}';
-Zcharacter 'ß';
-#EndIf;
-
-#IfV3;
+#Iftrue #version_number < 4;
 [ DoMenu menu_choices EntryR ChoiceR lines main_title i j;
 	menu_choices = 0; ! Avoid warning
 	menu_nesting++;
@@ -45,32 +38,34 @@ Zcharacter 'ß';
 
 	print "--- "; print (string) main_title; print " ---^^";
 
-	!if (menu_choices ofclass Routine) menu_choices.call();
-	!else                              print (string) menu_choices;
-
-	print "Es werden Informationen zu folgenden Themen bereitgestellt:^^";
+	print "There is information provided on the following:^^";
 	for(i = 1: i <= lines: i++) {
 		menu_item = i;
 		indirect(EntryR);
 		print i, ": ", (string) item_name, "^";
 	}
 	if(menu_nesting == 1) {
-		print "q: Spiel fortsetzen^";
+		print "q: Resume the game^";
 	} else {
-		print "q: Vorheriges Menü^";
+		print "q: Previous menu^";
 	}
 
 	for (::) {
-		print "^Wähle 1 bis ", lines, " oder ENTER um die Optionen erneut anzuzeigen.^";
+		print "^Select 1 to ", lines, " or ENTER to show the options again.^";
 		print "> ";
 
-       _ReadPlayerInput(true);
+		_ReadPlayerInput(true);
 		j = parse->1; ! number of words
+		parse->1=0;
 		if (j == 0) jump _v3_redisplay_menu;
 		i = parse-->1;
 		if(i == 'q//') {
 			menu_nesting--; if (menu_nesting > 0) rfalse;
+#ifdef M_NO_LOOK;
+			if (deadflag == 0) rtrue;
+#Ifnot;
 			if (deadflag == 0) <<Look>>;
+#Endif;
 			rfalse;
 		}
 		i = TryNumber(1);
@@ -86,11 +81,11 @@ Zcharacter 'ß';
 #IfNot;
 ! v5+
 
-Constant NKEY__TX       = "N = nächstes Thema";
-Constant PKEY__TX       = "P = vorheriges";
-Constant QKEY1__TX      = "  Q = Spiel fortsetzen";
-Constant QKEY2__TX      = "Q = vorheriges Menü";
-Constant RKEY__TX       = "RETURN = Thema lesen";
+Constant NKEY__TX	   = "N = next subject";
+Constant PKEY__TX       = "P = previous";
+Constant QKEY1__TX      = "  Q = resume game";
+Constant QKEY2__TX      = "Q = previous menu";
+Constant RKEY__TX       = "RETURN = read subject";
 
 Constant NKEY1__KY      = 'N';
 Constant NKEY2__KY      = 'n';
@@ -100,7 +95,7 @@ Constant QKEY1__KY      = 'Q';
 Constant QKEY2__KY      = 'q';
 
 [ DoMenu menu_choices EntryR ChoiceR
-         lines main_title main_wid cl i j oldcl pkey ch y x;
+		 lines main_title main_wid cl i j oldcl pkey ch y x;
 	menu_nesting++;
 	menu_item = 0;
 	lines = indirect(EntryR);
@@ -141,7 +136,7 @@ Constant QKEY2__KY      = 'q';
 	y = y+2*ch;
 	@set_cursor y x; font off;
 
-	if (menu_choices ofclass String) print (string) menu_choices;
+	if (IsAString(menu_choices)) print (string) menu_choices;
 	else                             menu_choices.call();
 
 	x = 1+3;
@@ -187,7 +182,7 @@ Constant QKEY2__KY      = 'q';
 			if (i == 2) jump _redisplay_menu;
 			if (i == 3) break;
 
-			print "^[Bitte drücke die Leertaste.]";
+			print "^[Please press SPACE.]";
 			@read_char 1 -> pkey; jump _redisplay_menu;
 		}
 	}
@@ -200,7 +195,11 @@ Constant QKEY2__KY      = 'q';
 	gg_statuswin_cursize = 0;
 #EndIf;
 	new_line; new_line; new_line;
+#ifdef M_NO_LOOK;
+	if (deadflag == 0) rtrue;
+#Ifnot;
 	if (deadflag == 0) <<Look>>;
+#Endif;
 ];
 
 #EndIf;
