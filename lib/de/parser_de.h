@@ -39,13 +39,16 @@ Constant LANG_DE;
 
 ! ---------------------------------------------------------------------------
 ! _DE_IsVowelByte: return true if byte c is a German vowel (ASCII or umlaut).
+! Only used by _DE_NormaliseDigraphsOnly; guarded accordingly.
 ! ---------------------------------------------------------------------------
+#IfNDef USE_ASCII;
 [ _DE_IsVowelByte c;
     if(c == 'a' or 'e' or 'i' or 'o' or 'u' or
        'A' or 'E' or 'I' or 'O' or 'U' or
        'ä' or 'ö' or 'ü' or 'Ä' or 'Ö' or 'Ü') rtrue;
     rfalse;
 ];
+#Endif; ! USE_ASCII
 
 ! ---------------------------------------------------------------------------
 ! _DE_NormaliseDigraphsOnly
@@ -108,6 +111,24 @@ Constant LANG_DE;
     return p_len;
 ];
 
+! ---------------------------------------------------------------------------
+! _DE_IsInDict: check if the word at p_addr (length p_len, as raw bytes in the
+! main input buffer) is in the game dictionary.
+! Uses a private mini-buffer so the main buffer/parse state is not disturbed.
+! Returns the dictionary address (non-zero) if found, 0 if not found.
+! ---------------------------------------------------------------------------
+Array _de_dict_buf -> 68;   ! 2-byte header + up to 64 chars + null
+Array _de_dict_parse -> 8;  ! 2-byte header + 1 word entry (4 bytes)
+
+[ _DE_IsInDict p_addr p_len  _i;
+    _de_dict_buf->0 = 64;         ! max chars
+    _de_dict_buf->1 = p_len;
+    for(_i = 0: _i < p_len: _i++) _de_dict_buf->(_i + 2) = (p_addr + _i)->0;
+    _de_dict_buf->(p_len + 2) = 0;  ! null-terminate
+    _de_dict_parse->0 = 1;        ! max 1 word
+    @tokenise _de_dict_buf _de_dict_parse;
+    return _de_dict_parse-->1;    ! dict word address (0 = not found)
+];
 
 ! ---------------------------------------------------------------------------
 ! BeforeParsing -- normalise unrecognised words then re-tokenise.
@@ -124,21 +145,34 @@ Constant LANG_DE;
 
 #IfNDef USE_ASCII;
     ! --- Pass 1: digraph normalisation only ---
+    ! Normalise to a temp buffer first, then only apply if the result is in
+    ! the dictionary.  This prevents unknown words like "kajuete" from being
+    ! silently rewritten to "kajüte" in error messages.
     _changed = false;
     for(_i = 1 : _i <= _nwords : _i++) {
         if(parse-->(_i + _i - 1) ~= 0) continue;
         _waddr = WordAddress(_i);
         _wlen  = WordLength(_i);
         if(_wlen < 2) continue;
-        _newlen = _DE_NormaliseDigraphsOnly(_waddr, _wlen);
-        if(_newlen < _wlen) {
-            _blen  = buffer->1;
-            for(_j = (_waddr + _newlen) - buffer : _j <= _blen + 1 : _j++) {
-                buffer->_j = buffer->(_j + (_wlen - _newlen));
-            }
-            buffer->1 = _blen - (_wlen - _newlen);
-            _changed = true;
+        ! Copy word into temp buffer and normalise there
+        _de_dict_buf->0 = 64;
+        for(_j = 0: _j < _wlen: _j++) _de_dict_buf->(_j + 2) = (_waddr + _j)->0;
+        _newlen = _DE_NormaliseDigraphsOnly(_de_dict_buf + 2, _wlen);
+        if(_newlen >= _wlen) continue;  ! no digraphs found
+        ! Only apply if the normalised form exists in the dictionary
+        _de_dict_buf->1 = _newlen;
+        _de_dict_buf->(_newlen + 2) = 0;
+        _de_dict_parse->0 = 1;
+        @tokenise _de_dict_buf _de_dict_parse;
+        if(_de_dict_parse-->1 == 0) continue;  ! normalised form not in dict
+        ! Apply: write normalised bytes to main buffer, then close the gap
+        for(_j = 0: _j < _newlen: _j++) (_waddr + _j)->0 = _de_dict_buf->(_j + 2);
+        _blen  = buffer->1;
+        for(_j = (_waddr + _newlen) - buffer : _j <= _blen + 1 : _j++) {
+            buffer->_j = buffer->(_j + (_wlen - _newlen));
         }
+        buffer->1 = _blen - (_wlen - _newlen);
+        _changed = true;
     }
     if(_changed) {
         buffer->(2 + buffer->1) = 0;
@@ -172,25 +206,40 @@ Constant LANG_DE;
         ! produced by interpreter digraph conversion from a trailing -ae/-oe/-ue.
         _j = (_waddr + _wlen - 1)->0;  ! last byte
         if(_j == 155 or 156 or 157) {
-            ! Expand: replace the umlaut with its vowel (a/o/u) and append 'e'.
-            ! This undoes the interpreter's digraph conversion.
+            ! Expand ZSCII umlaut to vowel+e, then check if stem is in dictionary.
             _blen = buffer->1;
             ! shift everything after the umlaut right by 1 to make room for 'e'
             for(_newlen = _blen + 1 : _newlen >= (_waddr + _wlen) - buffer : _newlen--) {
                 buffer->(_newlen + 1) = buffer->_newlen;
             }
-            ! replace umlaut byte with vowel
             if(_j == 155) (_waddr + _wlen - 1)->0 = 'a';
             else if(_j == 156) (_waddr + _wlen - 1)->0 = 'o';
             else (_waddr + _wlen - 1)->0 = 'u';
-            ! insert 'e' after the vowel
             (_waddr + _wlen)->0 = 'e';
             buffer->1 = _blen + 1;
             _wlen++;
-            ! fall through: now the word ends in 'e' so the strip below applies
+            ! Only strip if the stem (word without trailing 'e') is in the dictionary
+            if(_DE_IsInDict(_waddr, _wlen - 1) ~= 0) {
+                for(_j = (_waddr + _wlen - 1) - buffer : _j <= _blen + 1 : _j++) {
+                    buffer->_j = buffer->(_j + 1);
+                }
+                buffer->1 = _blen;
+                _changed = true;
+            } else {
+                ! Stem not found: undo the expansion, restore original ZSCII byte
+                (_waddr + _wlen - 2)->0 = _j;
+                for(_newlen = (_waddr + _wlen - 1) - buffer : _newlen <= _blen : _newlen++) {
+                    buffer->_newlen = buffer->(_newlen + 1);
+                }
+                buffer->1 = _blen;
+            }
+            continue;  ! ZSCII case fully handled
         }
         if((_waddr + _wlen - 1)->0 ~= 'e') continue;
         _newlen = _wlen - 1;
+        ! Only strip if the stem exists in the dictionary — preserves the
+        ! original input form in error messages for words not in the dict.
+        if(_DE_IsInDict(_waddr, _newlen) == 0) continue;
         ! shift later bytes left by 1 to close the gap left by the stripped 'e'
         _blen = buffer->1;
         for(_j = (_waddr + _newlen) - buffer : _j <= _blen + 1 : _j++) {
@@ -215,6 +264,8 @@ Constant LANG_DE;
         if(_wlen < 3) continue;
         _newlen = _DE_PruneWordSuffixLen(_waddr, _wlen);
         if(_newlen >= _wlen) continue;
+        ! Only prune if the resulting stem is in the dictionary
+        if(_DE_IsInDict(_waddr, _newlen) == 0) continue;
 
         _blen = buffer->1;
         ! shift later bytes left by (_wlen - _newlen) to close the removed suffix

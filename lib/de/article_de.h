@@ -419,6 +419,16 @@ Constant DE_MODE_BARE  = 2;
             _changed = true;
             continue;
         }
+
+        ! --- "hoch" (4 Bytes) \u2192 "rauf" (4 Bytes): in-place (Richtung oben) ---
+        if (_wlen == 4 && _waddr->0 == 'h' && _waddr->1 == 'o' && _waddr->2 == 'c' && _waddr->3 == 'h') {
+            buffer->_woff       = 'r';
+            buffer->(_woff + 1) = 'a';
+            buffer->(_woff + 2) = 'u';
+            buffer->(_woff + 3) = 'f';
+            _changed = true;
+            continue;
+        }
     }
     return _changed;
 ];

@@ -6,21 +6,12 @@
 ! — the German overrides here remain separate.
 
 ! ---------------------------------------------------------------------------
-! German special characters (Zcharacter declarations for z5+ games)
-! These must come before the first use of these characters in any string
-! or dictionary word. Skip entirely if USE_ASCII is defined.
+! German special characters
+! The Zcharacter alphabet table is defined in lib/de/dechar.h, which game
+! source must include before any string literal (even "Constant Story").
+! ASCII and Z3 builds skip the table automatically via #IfV5/#IfNDef USE_ASCII
+! guards inside dechar.h.
 ! ---------------------------------------------------------------------------
-#IfV5;
-#IfNDef USE_ASCII;
-Zcharacter 'ä';  ! U+00E4
-Zcharacter 'ö';  ! U+00F6
-Zcharacter 'ü';  ! U+00FC
-Zcharacter 'ß';  ! U+00DF
-Zcharacter 'Ä';  ! U+00C4
-Zcharacter 'Ö';  ! U+00D6
-Zcharacter 'Ü';  ! U+00DC
-#EndIf; ! USE_ASCII
-#EndIf; ! IfV5
 
 ! ---------------------------------------------------------------------------
 ! German parser word constants

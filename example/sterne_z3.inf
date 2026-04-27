@@ -1,0 +1,12 @@
+!% -~S
+!% $OMIT_UNUSED_ROUTINES=1
+!% $ZCODE_LESS_DICT_DATA=1
+
+! Z3 wrapper for sterne.inf.
+! Compiles to a Z3 story file (128 KB limit, pure ZSCII — no Unicode).
+! Reuses the USE_ASCII preprocessed sources from the ASCII build step.
+!
+! Note: no "!% -Cu" here — Z3 has no Unicode extension support.
+Constant USE_ASCII;
+
+Include "sterne.inf";

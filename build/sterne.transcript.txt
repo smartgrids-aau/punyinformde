@@ -1,15 +1,15 @@
 
 
 
-Du wachst auf. Die Kajüte schwankt im Seegang, und
-Licht fällt durch das kleine Bullauge. Du erinnerst dich:
-Gestern Abend hat jemand deine Kajütentür von außen abgeschlossen.
-Wer -- und warum? Es wird Zeit, das herauszufinden.
+Du wachst auf. Die Kajüte schwankt im Seegang, und Licht fällt durch das kleine
+Bullauge. Du erinnerst dich: Gestern Abend hat jemand deine Kajütentür von außen
+abgeschlossen.
 
+Wer -- und warum? Es wird Zeit, das herauszufinden.
 
 Das Schiff der Sterne
 Ein kurzes Abenteuer auf hoher See.
-Release 1 / Serial number 260426 / Inform v6.44 PunyInformDE v6.5 R
+Release 1 / Serial number 260427 / Inform v6.44 PunyInformDE v6.5 R
 
 Die Kapitänskajüte
 Die enge Kajüte des Kapitäns auf dem Segelschiff Sternwind. Ein alter
@@ -178,8 +178,6 @@ Molly: "Der Papagei krächzt laut: Wo ist Marten? BRAAK!"
 
 Damit endet euer kurzes Gespräch.
 
-[Du hast 1 Punkt erhalten.]
-
 > rede mit navigatorin
 Du: "Was ist unser Kurs?"
 Navigatorin Elara: "Navigatorin Elara tippt auf die Seekarte. Der richtige
@@ -191,6 +189,8 @@ deutet auf die Insel hin. Es wird Zeit, dass du das Fernrohr nutzt!
 
 Damit endet euer kurzes Gespräch.
 
+[Du hast 1 Punkt erhalten.]
+
 > nimm fernrohr
 Genommen.
 
@@ -200,9 +200,7 @@ Am Horizont, im letzten Licht der Sonne, liegt eine Insel! Auf einem
 Felsen erkennst du deutlich ein eingemeiseltes Kreuz -- das Zeichen
 für einen vergrabenen Schatz.
 
-Du senkst das Fernrohr und lächelst.
-Die Seekarte, der Bericht des Steuermanns, der Papagei und die
-Navigatorin hatten alle Recht gehabt!
+Du senkst das Fernrohr und lächelst. Das Abenteuer kann beginnen!
 
 
 [Du hast 1 Punkt erhalten.]

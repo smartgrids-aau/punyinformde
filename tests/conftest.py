@@ -53,6 +53,8 @@ STORY_SOURCE       = GAME_ROOT / "example" / "sterne.inf"
 STORY_Z5           = GAME_ROOT / "build" / "sterne.z5"
 STORY_ASCII_SOURCE = GAME_ROOT / "example" / "sterne_ascii.inf"
 STORY_ASCII_Z5     = GAME_ROOT / "build" / "sterne.ascii.z5"
+STORY_Z3_SOURCE    = GAME_ROOT / "example" / "sterne_z3.inf"
+STORY_Z3           = GAME_ROOT / "build" / "sterne.z3"
 
 # Input encoding for dfrotz on Windows.
 # dfrotz reads raw bytes from piped stdin; Windows Latin-1 (cp1252) encodes
@@ -217,4 +219,27 @@ def game_ascii(compiled_game_ascii: Path) -> ASCII_GameSession:
     if find_dfrotz() is None:
         pytest.skip("dfrotz not found")
     return ASCII_GameSession(compiled_game_ascii, dfrotz=GAME_ROOT / "tools" / "dfrotz.exe")
+
+
+@pytest.fixture(scope="session")
+def compiled_game_z3(include_paths: list[Path]) -> Path:
+    """Return the Z3 build .z3, compiling if needed."""
+    if STORY_Z3.is_file():
+        return STORY_Z3
+    if find_inform6() is None:
+        pytest.skip("inform6 not found and no pre-built .z3 in build/")
+    result = compile_story(
+        STORY_Z3_SOURCE,
+        include_paths=include_paths,
+        output=STORY_Z3,
+    )
+    return result.z_file
+
+
+@pytest.fixture
+def game_z3(compiled_game_z3: Path) -> ASCII_GameSession:
+    """Fresh ASCII_GameSession for the Z3 build (pure ZSCII, no Unicode)."""
+    if find_dfrotz() is None:
+        pytest.skip("dfrotz not found")
+    return ASCII_GameSession(compiled_game_z3, dfrotz=GAME_ROOT / "tools" / "dfrotz.exe")
 

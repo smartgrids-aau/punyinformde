@@ -63,13 +63,32 @@ New-Item -ItemType Directory -Force -Path "build\ascii_lib\de" | Out-Null
 New-Item -ItemType Directory -Force -Path "build\ascii_src"     | Out-Null
 
 Convert-ToAsciiDigraphs "lib\de\globals_de.h"  "build\ascii_lib\de\globals_de.h"
+Convert-ToAsciiDigraphs "lib\de\dechar.h"      "build\ascii_lib\de\dechar.h"
 Convert-ToAsciiDigraphs "lib\de\messages_de.h" "build\ascii_lib\de\messages_de.h"
 Convert-ToAsciiDigraphs "lib\de\grammar_de.h"  "build\ascii_lib\de\grammar_de.h"
+Convert-ToAsciiDigraphs "lib\de\parser_de.h"   "build\ascii_lib\de\parser_de.h"
+Convert-ToAsciiDigraphs "lib\de\article_de.h"  "build\ascii_lib\de\article_de.h"
 Convert-ToAsciiDigraphs "lib\puny.h"           "build\ascii_lib\puny.h"
 Convert-ToAsciiDigraphs "example\sterne.inf" "build\ascii_src\sterne.inf"
 
 Write-Host "Compiling sterne.ascii.z5..."
 & .\tools\inform6.exe "+include_path=build\ascii_lib,build\ascii_src,lib" example\sterne_ascii.inf build\sterne.ascii.z5
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+# -------------------------------------------------------------------------
+# Z3 build
+#
+# Reuses the same preprocessed ASCII source tree as the ASCII build.
+# Output extension .z3 tells inform6 to target the Z3 machine format (128 KB).
+# No -Cu: Z3 has no Unicode extension.
+#
+# Note (fredrikr, PunyInform dev): game globals must not be declared before
+# globals.h in Z3 because the Z-machine spec requires score/turns/location at
+# specific global-variable indices. sterne.inf moves all game Global
+# declarations to after the library includes for this reason.
+# -------------------------------------------------------------------------
+Write-Host "Compiling sterne.z3..."
+& .\tools\inform6.exe "+include_path=build\ascii_lib,build\ascii_src,lib" example\sterne_z3.inf build\sterne.z3
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # -------------------------------------------------------------------------
@@ -99,6 +118,7 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding $false
 
 Remove-Item "build\sterne.transcript.txt"       -ErrorAction SilentlyContinue
 Remove-Item "build\sterne.transcript.ascii.txt" -ErrorAction SilentlyContinue
+Remove-Item "build\sterne.transcript.z3.txt"    -ErrorAction SilentlyContinue
 
 # Unicode transcript
 $tmpUnicode = [System.IO.Path]::GetTempFileName()
@@ -113,4 +133,7 @@ try {
 # ASCII transcript
 cmd /c "tools\dfrotz.exe -m -q -Z 0 -T -n ""build\sterne.transcript.ascii.txt"" ""build\sterne.ascii.z5"" < ""example\sterne.walkthrough.ascii.txt"""
 
-Write-Host "Build complete: build\sterne.z5, build\sterne.ascii.z5, build\sterne.transcript.txt, build\sterne.transcript.ascii.txt"
+# Z3 transcript (reuses ASCII walkthrough — same commands, same ZSCII input)
+cmd /c "tools\dfrotz.exe -m -q -Z 0 -T -n ""build\sterne.transcript.z3.txt"" ""build\sterne.z3"" < ""example\sterne.walkthrough.ascii.txt"""
+
+Write-Host "Build complete: build\sterne.z5, build\sterne.ascii.z5, build\sterne.z3, build\sterne.transcript.txt, build\sterne.transcript.ascii.txt, build\sterne.transcript.z3.txt"

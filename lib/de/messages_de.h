@@ -688,6 +688,17 @@ Constant SKIP_MSG_PARSER_NOSUCHTHING;
 
 	! Not a string, there should be code for the message here
 	switch(p_msg) {
+#IfTrue MSG_PROMPT < 1000;
+	MSG_PROMPT:
+		print "> ";
+		rtrue;
+#EndIf;
+#Iftrue MSG_LOOK_BEFORE_ROOMNAME < 1000;
+	MSG_LOOK_BEFORE_ROOMNAME:
+		! what to write at first when describing a room. Can be used to
+		! add a newline, but default is to write nothing.
+		!@new_line;
+#Endif;
 #Iftrue MSG_TAKE_SCENERY < 1000;
 	MSG_TAKE_SCENERY:
 		print_ret (CTheyreorThats) noun, " ist nicht portabel.";
@@ -710,11 +721,6 @@ Constant SKIP_MSG_PARSER_NOSUCHTHING;
 	! p_arg_1 = the object being put into SACK_OBJECT.
 		"(lege ", (the) p_arg_1, " in ", (the) SACK_OBJECT, " um Platz zu schaffen)";
 #EndIf;
-#EndIf;
-#IfTrue MSG_PROMPT < 1000;
-	MSG_PROMPT:
-		print "> ";
-		rtrue;
 #EndIf;
 #IfTrue MSG_INVENTORY_DEFAULT < 1000;
 	MSG_INVENTORY_DEFAULT:
@@ -752,10 +758,6 @@ Constant SKIP_MSG_PARSER_NOSUCHTHING;
 	! p_arg_1 = the base verb for this action.
 		"Du kannst ", (ThatorThose) noun, " nicht ", (verbname) p_arg_1, ".";
 #Endif;
-#IfTrue MSG_EAT_INEDIBLE < 1000;
-	MSG_EAT_INEDIBLE:
-		print_ret (CTheyreorThats) noun, " ist ungenießbar.";
-#EndIf;
 #IfTrue MSG_OPEN_ALREADY < 1000;
 	MSG_OPEN_ALREADY:
 		print_ret (CTheyreorIts) noun, " bereits offen.";
@@ -791,12 +793,6 @@ Constant SKIP_MSG_PARSER_NOSUCHTHING;
 			short_name_case = p_arg_2;
 		}
 		".";
-#Endif;
-#Iftrue MSG_LOOK_BEFORE_ROOMNAME < 1000;
-	MSG_LOOK_BEFORE_ROOMNAME:
-		! what to write at first when describing a room. Can be used to
-		! add a newline, but default is to write nothing.
-		!@new_line;
 #Endif;
 #Ifndef SKIP_MSG_CLOSE_DEFAULT;
 	MSG_CLOSE_DEFAULT:
@@ -976,7 +972,12 @@ Constant SKIP_MSG_PARSER_NOSUCHTHING;
 #EndIf;
 #IfTrue MSG_PARSER_NO_IT < 1000;
 	MSG_PARSER_NO_IT:
-		"Ich weiß nicht, was ~", (address) p_arg_1, "~ bedeutet.";
+		print "Ich weiß nicht, was ~";
+		if (p_arg_1 == 'it') print "es";
+		else if (p_arg_1 == 'him') print "er";
+		else if (p_arg_1 == 'her' or 'them') print "sie";
+		else print (address) p_arg_1;
+		print_ret "~ bedeutet.";
 #EndIf;
 #Ifndef SKIP_MSG_PARSER_NOSUCHTHING;
 	MSG_PARSER_NOSUCHTHING, MSG_SHOUT_NOSUCHTHING:
@@ -1014,6 +1015,7 @@ Constant SKIP_MSG_PARSER_NOSUCHTHING;
 #EndIf;
 #Ifndef SKIP_MSG_LOCK_KEY_DOESNT_FIT;
 	MSG_LOCK_KEY_DOESNT_FIT, MSG_UNLOCK_KEY_DOESNT_FIT:
+		if (second == nothing) "Du hast keinen passenden Schlüssel dafür.";
 		print_ret (The) second, " scheint nicht in das Schloss zu passen.";
 #Endif;
 #IfTrue MSG_EXAMINE_CLOSED < 1000;
@@ -1087,6 +1089,76 @@ MSG_RUB_DEFAULT, MSG_SQUEEZE_DEFAULT:
 		"Aber es ist dunkel.";
 #Endif;
 #Endif;
+#IfTrue MSG_EAT_INEDIBLE < 1000;
+	MSG_EAT_INEDIBLE:
+		print_ret (CTheyreorThats) noun, " ist ungenießbar.";
+#EndIf;
+#IfTrue MSG_ENTER_BAD_LOCATION < 1000;
+	MSG_ENTER_BAD_LOCATION:
+		print "Du musst zuerst ";
+		if(player notin location && ~~IndirectlyContains(parent(player), noun))
+			print (the) parent(player), " verlassen";
+		else
+			print (the) parent(noun), " betreten";
+		".";
+#EndIf;
+#IfTrue MSG_ENTER_HELD < 1000;
+	MSG_ENTER_HELD:
+		! "betreten" = Akkusativ → (DE_Den); (ItorThem) = Akkusativ-Pronomen
+		"Du kannst ", (DE_Den) noun, " nicht betreten, während du ", (ItorThem) noun, " trägst.";
+#EndIf;
+#Ifndef SKIP_MSG_INSERT_NOT_CONTAINER;
+#ifdef MSG_EMPTY_NOT_CONTAINER;
+	MSG_INSERT_NOT_CONTAINER, MSG_EMPTY_NOT_CONTAINER:
+#Ifnot;
+	MSG_INSERT_NOT_CONTAINER:
+#Endif;
+		! p_arg_1 = the object that cant contain things
+		print_ret (The) p_arg_1, " kann keine Dinge enthalten.";
+#Endif;
+
+#IfDef OPTIONAL_EXTENDED_VERBSET;
+#IfTrue MSG_BLOW_DEFAULT < 1000;
+	MSG_BLOW_DEFAULT:
+		"Du kannst ", (the) noun, " nicht sinnvoll pusten.";
+#EndIf;
+#IfTrue MSG_EMPTY_ALREADY_EMPTY < 1000;
+	MSG_EMPTY_ALREADY_EMPTY:
+		! p_arg_1 = the object that is already empty
+		print_ret (CObjIs) p_arg_1, " bereits leer.";
+#EndIf;
+#IfTrue MSG_SET_DEFAULT < 1000;
+	MSG_SET_DEFAULT:
+		"Nein, du kannst ", (thatorthose) noun, " nicht einstellen.";
+#EndIf;
+#IfTrue MSG_SET_TO_DEFAULT < 1000;
+	MSG_SET_TO_DEFAULT:
+		"Nein, du kannst ", (thatorthose) noun, " nicht auf etwas einstellen.";
+#EndIf;
+#IfTrue MSG_WAVE_DEFAULT < 1000;
+	MSG_WAVE_DEFAULT:
+		! "mit" + Dativ → (DE_Dem)
+		"Du siehst dämlich aus, wenn du mit ", (DE_Dem) noun, " winkst.";
+#EndIf;
+#EndIf; ! Extended verbset
+
+#Ifndef NO_SCORE;
+#Iftrue MSG_PARSER_NEW_SCORE < 1000;
+	MSG_PARSER_NEW_SCORE:
+		! p_arg_1 = the old score
+		if(p_arg_1 < score) {
+			p_arg_2 = score - p_arg_1;
+			print "^[Du hast ", p_arg_2, " Punkt";
+			if(p_arg_2 ~= 1) print "e";
+			" erhalten.]";
+		} else {
+			p_arg_2 = p_arg_1 - score;
+			print "^[Du hast ", p_arg_2, " Punkt";
+			if(p_arg_2 ~= 1) print "e";
+			" verloren.]";
+		}
+#Endif;
+#Endif;
 #Iftrue MSG_SCORE_DEFAULT < 1000;
 	MSG_SCORE_DEFAULT:
 #Ifdef NO_SCORE;
@@ -1108,6 +1180,11 @@ MSG_RUB_DEFAULT, MSG_SQUEEZE_DEFAULT:
 		"insgesamt (von ", MAX_SCORE, ")";
 #EndIf;
 #EndIf;
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Infrequently used messages
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 #Ifndef SKIP_MSG_LOOKMODE;
 	MSG_LOOKMODE_NORMAL, MSG_LOOKMODE_LONG, MSG_LOOKMODE_SHORT:
 		print "Dieses Spiel ist jetzt im ";
@@ -1164,29 +1241,6 @@ MSG_RUB_DEFAULT, MSG_SQUEEZE_DEFAULT:
 		print "Du bist gestorben";
 		rtrue;
 #EndIf;
-#IfTrue MSG_ENTER_BAD_LOCATION < 1000;
-	MSG_ENTER_BAD_LOCATION:
-		print "Du musst zuerst ";
-		if(player notin location && ~~IndirectlyContains(parent(player), noun))
-			print (the) parent(player), " verlassen";
-		else
-			print (the) parent(noun), " betreten";
-		".";
-#EndIf;
-#IfTrue MSG_ENTER_HELD < 1000;
-	MSG_ENTER_HELD:
-		! "betreten" = Akkusativ → (DE_Den); (ItorThem) = Akkusativ-Pronomen
-		"Du kannst ", (DE_Den) noun, " nicht betreten, während du ", (ItorThem) noun, " trägst.";
-#EndIf;
-#Ifndef SKIP_MSG_INSERT_NOT_CONTAINER;
-#ifdef MSG_EMPTY_NOT_CONTAINER;
-	MSG_INSERT_NOT_CONTAINER, MSG_EMPTY_NOT_CONTAINER:
-#Ifnot;
-	MSG_INSERT_NOT_CONTAINER:
-#Endif;
-		! p_arg_1 = the object that cant contain things
-		print_ret (The) p_arg_1, " kann keine Dinge enthalten.";
-#Endif;
 #IfTrue MSG_YES_OR_NO < 1000;
 	MSG_YES_OR_NO:
 		print "Bitte antworte mit Ja oder Nein: ";
@@ -1205,50 +1259,7 @@ MSG_RUB_DEFAULT, MSG_SQUEEZE_DEFAULT:
 		if(p_msg == MSG_NOTIFY_ON) "ein.";
 		"aus.";
 #Endif;
-#Iftrue MSG_PARSER_NEW_SCORE < 1000;
-	MSG_PARSER_NEW_SCORE:
-		! p_arg_1 = the old score
-		if(p_arg_1 < score) {
-			p_arg_2 = score - p_arg_1;
-			print "^[Du hast ", p_arg_2, " Punkt";
-			if(p_arg_2 ~= 1) print "e";
-			" erhalten.]";
-		} else {
-			p_arg_2 = p_arg_1 - score;
-			print "^[Du hast ", p_arg_2, " Punkt";
-			if(p_arg_2 ~= 1) print "e";
-			" verloren.]";
-		}
 #Endif;
-#Endif;
-
-
-
-
-#IfDef OPTIONAL_EXTENDED_VERBSET;
-#IfTrue MSG_BLOW_DEFAULT < 1000;
-	MSG_BLOW_DEFAULT:
-		"Du kannst ", (the) noun, " nicht sinnvoll pusten.";
-#EndIf;
-#IfTrue MSG_EMPTY_ALREADY_EMPTY < 1000;
-	MSG_EMPTY_ALREADY_EMPTY:
-		! p_arg_1 = the object that is already empty
-		print_ret (CObjIs) p_arg_1, " bereits leer.";
-#EndIf;
-#IfTrue MSG_SET_DEFAULT < 1000;
-	MSG_SET_DEFAULT:
-		"Nein, du kannst ", (thatorthose) noun, " nicht einstellen.";
-#EndIf;
-#IfTrue MSG_SET_TO_DEFAULT < 1000;
-	MSG_SET_TO_DEFAULT:
-		"Nein, du kannst ", (thatorthose) noun, " nicht auf etwas einstellen.";
-#EndIf;
-#IfTrue MSG_WAVE_DEFAULT < 1000;
-	MSG_WAVE_DEFAULT:
-		! "mit" + Dativ → (DE_Dem)
-		"Du siehst dämlich aus, wenn du mit ", (DE_Dem) noun, " winkst.";
-#EndIf;
-#EndIf;
 
 default:
 		! No code found. Print an error message.

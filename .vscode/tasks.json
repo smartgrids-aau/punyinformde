@@ -105,6 +105,44 @@
         "clear": true
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Test Dfrotz (Z3)",
+      "type": "shell",
+      "command": "tools\\dfrotz.exe build\\sterne.z3",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": ["Build"],
+      "group": {
+        "kind": "test"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test Lectrote (Z3)",
+      "type": "shell",
+      "command": "tools\\Lectrote\\Lectrote.exe build\\sterne.z3",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": ["Build"],
+      "group": {
+        "kind": "test"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true,
+        "clear": true
+      },
+      "problemMatcher": []
     }
   ]
 }
