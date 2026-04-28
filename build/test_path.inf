@@ -1,5 +1,0 @@
-﻿!% ++lib\de
-Include "dechar.h";
-Constant Story "Test";
-Release 1; Serial "000101";
-[ Main; ];
