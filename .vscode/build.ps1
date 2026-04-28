@@ -33,7 +33,9 @@ New-Item -ItemType Directory -Force -Path "build" | Out-Null
 # Standard Unicode build
 # -------------------------------------------------------------------------
 Write-Host "Compiling sterne.z5..."
-& .\tools\inform6.exe +include_path=lib example\sterne.inf build\sterne.z5
+# +lib       — finds puny.h, globals.h, grammar.h etc.
+# +lib\de    — finds chartable_de.h, globals_de.h, messages_de.h etc. (no "de/" prefix needed in source)
+& .\tools\inform6.exe "+include_path=lib,lib\de" example\sterne.inf build\sterne.z5
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # -------------------------------------------------------------------------
@@ -63,7 +65,7 @@ New-Item -ItemType Directory -Force -Path "build\ascii_lib\de" | Out-Null
 New-Item -ItemType Directory -Force -Path "build\ascii_src"     | Out-Null
 
 Convert-ToAsciiDigraphs "lib\de\globals_de.h"  "build\ascii_lib\de\globals_de.h"
-Convert-ToAsciiDigraphs "lib\de\dechar.h"      "build\ascii_lib\de\dechar.h"
+Convert-ToAsciiDigraphs "lib\de\chartable_de.h" "build\ascii_lib\de\chartable_de.h"
 Convert-ToAsciiDigraphs "lib\de\messages_de.h" "build\ascii_lib\de\messages_de.h"
 Convert-ToAsciiDigraphs "lib\de\grammar_de.h"  "build\ascii_lib\de\grammar_de.h"
 Convert-ToAsciiDigraphs "lib\de\parser_de.h"   "build\ascii_lib\de\parser_de.h"
@@ -72,7 +74,7 @@ Convert-ToAsciiDigraphs "lib\puny.h"           "build\ascii_lib\puny.h"
 Convert-ToAsciiDigraphs "example\sterne.inf" "build\ascii_src\sterne.inf"
 
 Write-Host "Compiling sterne.ascii.z5..."
-& .\tools\inform6.exe "+include_path=build\ascii_lib,build\ascii_src,lib" example\sterne_ascii.inf build\sterne.ascii.z5
+& .\tools\inform6.exe "+include_path=build\ascii_lib,build\ascii_lib\de,build\ascii_src,lib,lib\de" example\sterne_ascii.inf build\sterne.ascii.z5
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # -------------------------------------------------------------------------
@@ -88,7 +90,7 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 # declarations to after the library includes for this reason.
 # -------------------------------------------------------------------------
 Write-Host "Compiling sterne.z3..."
-& .\tools\inform6.exe "+include_path=build\ascii_lib,build\ascii_src,lib" example\sterne_z3.inf build\sterne.z3
+& .\tools\inform6.exe "+include_path=build\ascii_lib,build\ascii_lib\de,build\ascii_src,lib,lib\de" example\sterne_z3.inf build\sterne.z3
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 # -------------------------------------------------------------------------

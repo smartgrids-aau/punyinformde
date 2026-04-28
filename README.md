@@ -53,20 +53,24 @@ git clone https://github.com/IkeC/PunyTest.git C:\Source\PunyTest
 
 ### 1. Compile a game
 
-Pass the **`lib/` directory** as the include path. This is required because the
-library files include each other with relative paths such as
-`Include "de/globals_de.h"` — inform6 resolves these relative to each entry on
-the include path, so the root of the include path must be `lib/` itself (not the
-project root, not `lib/de/`).
+Pass **both `lib/` and `lib/de/`** as include paths. `lib/` is needed for the
+top-level library files (`globals.h`, `puny.h`, …); `lib/de/` is needed so that
+`Include "chartable_de.h"` and the internal `Include "globals_de.h"` etc. can be
+resolved without a `de/` prefix.
 
 ```powershell
-# From the project root:
-tools\inform6.exe +include_path=lib example\sterne.inf build\sterne.z5
+# Windows — from the project root:
+tools\inform6.exe +include_path=lib,lib\de example\sterne.inf build\sterne.z5
+```
+
+```bash
+# Linux / macOS — from the project root:
+tools/inform6 +include_path=lib,lib/de example/sterne.inf build/sterne.z5
 ```
 
 If you copy the library to a different location, the same rule applies — point
-`+include_path=` at the folder that **contains** both `globals.h` and the
-`de/` sub-folder.
+`+include_path=` at the folder that **contains** `globals.h` and the `de/`
+sub-folder, **and** add the `de/` sub-folder as a second entry.
 
 ### 2. Use the VS Code build task
 

@@ -23,13 +23,13 @@
 
 System_file;
 
-Include "de/article_de.h";
-Include "de/messages_de.h";
+Include "article_de.h";
+Include "messages_de.h";
 
 
 ! ######################### Include utility files
 
-Include "de/grammar_de.h";
+Include "grammar_de.h";
 
 ! ######################### Helper routines
 

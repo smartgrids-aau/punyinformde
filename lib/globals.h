@@ -3,7 +3,7 @@
 System_file;
 
 ! German-specific global definitions and overrides
-Include "de/globals_de.h";
+Include "globals_de.h";
 
 Constant PUNYINFORM_MAJOR_VERSION = 6;
 Constant PUNYINFORM_MINOR_VERSION = 5;

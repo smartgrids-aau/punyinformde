@@ -10,9 +10,10 @@
 
 ! Custom alphabet table — must come before any string literal (even Story).
 ! Puts German umlauts in A0 (cheapest row) for smaller Z5 story files.
-! The #IfV5/#IfNDef USE_ASCII guards inside dechar.h skip this in
+! The #IfV5/#IfNDef USE_ASCII guards inside chartable_de.h skip this in
 ! ASCII and Z3 builds automatically.
-Include "de/dechar.h";
+! Resolved via the lib\de path on the include_path build switch.
+Include "chartable_de.h";
 
 Constant Story      "Das Schiff der Sterne";
 Constant Headline   "^Ein kurzes Abenteuer auf hoher See.^";

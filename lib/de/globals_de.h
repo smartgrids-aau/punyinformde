@@ -7,10 +7,10 @@
 
 ! ---------------------------------------------------------------------------
 ! German special characters
-! The Zcharacter alphabet table is defined in lib/de/dechar.h, which game
+! The Zcharacter alphabet table is defined in lib/de/chartable_de.h, which game
 ! source must include before any string literal (even "Constant Story").
 ! ASCII and Z3 builds skip the table automatically via #IfV5/#IfNDef USE_ASCII
-! guards inside dechar.h.
+! guards inside chartable_de.h.
 ! ---------------------------------------------------------------------------
 
 ! ---------------------------------------------------------------------------
@@ -129,4 +129,4 @@ Constant DE_SUEDWEST = 0;
 #EndIf;
 
 ! German parser extension (enables ja/nein in YesOrNo via Replace directive)
-Include "de/parser_de.h";
+Include "parser_de.h";
