@@ -98,7 +98,7 @@ Verb meta 'skript' 'transkript'
 ! ---------------------------------------------------------------------------
 
 ! --- Take / Pick up ---
-Verb 'nimm' 'hol' 'nehm'
+Verb 'nimm' 'hol'
 	* multi                                     -> Take
 	* 'auf' multi                               -> Take
 	* multi 'auf'                               -> Take
@@ -123,7 +123,7 @@ Verb 'schmeiß' 'wirf'
 	* multiexcept 'auf' noun                    -> PutOn;
 
 ! --- Look / Examine ---
-Verb 'schau' 'seh' 'sieh' 'guck' 'blick' 'u//'
+Verb 'schau' 'sieh' 'guck' 'blick' 'u//'
 	*                                           -> Look
 	* 'dich' 'um'                               -> Look
 	* 'um'                                      -> Look
@@ -194,7 +194,7 @@ Verb 'verlass'
 	*                                           -> Exit
 	* noun                                      -> Exit;
 
-Verb 'betret' 'betritt'
+Verb 'betret'
 	* noun                                      -> Enter;
 
 ! --- Give / Show ---
@@ -255,7 +255,7 @@ Verb 'trink' 'sauf'
 	* noun                                      -> Drink;
 
 ! --- Eat ---
-Verb 'iss' 'fris' 'ess'
+Verb 'iss' 'fris'
 	* held                                      -> Eat;
 
 ! --- Listen ---
@@ -279,7 +279,7 @@ Verb 'durchsuch' 'such'
 	* 'in' noun                                 -> Search;
 
 ! --- Read ---
-Verb 'lies' 'les'
+Verb 'lies'
 	* noun                                      -> Examine;
 
 ! --- Lock / Unlock ---
@@ -339,7 +339,7 @@ Verb 'schneid' 'hack'
 	* noun 'mit' held                           -> Attack;
 
 ! --- Tie ---
-Verb 'bind' 'befestig' 'knot'
+Verb 'bind' 'befestig'
 	* noun                                      -> Tie
 	* noun 'an' noun                            -> Tie;
 
@@ -402,7 +402,7 @@ Verb 'kauf'
 	* noun                                      -> Buy;
 
 ! Consult
-Verb 'schlage'
+Verb 'schlag'
 	* topic 'nach'                              -> Consult
 	* 'in' noun 'nach' topic 'nach'             -> Consult reverse;
 
@@ -420,7 +420,7 @@ Verb 'bet'
 	*                                           -> Pray;
 
 ! Set / Adjust
-Verb 'stelle'
+Verb 'stell'
 	* noun 'ein'                                -> Set
 	* noun 'auf' topic 'ein'                    -> SetTo;
 
